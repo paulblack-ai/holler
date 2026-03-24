@@ -49,7 +49,14 @@ Plans:
   3. A caller who opts out mid-call via DTMF or spoken keyword is immediately logged to the append-only consent DB and subsequent calls to that number are blocked
   4. Every compliance check (TCPA, DNC, time-of-day, consent) produces an immutable audit log entry with timestamp, result, and call context
   5. The call recording (WAV) and post-call transcript are persisted and retrievable after the call ends
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Foundational types (ComplianceModule ABC, TelecomSession), NumberPool, config extensions
+- [ ] 02-02-PLAN.md — Data layer: ConsentDB (append-only), DNCList, AuditLog (JSONL + SQLite)
+- [ ] 02-03-PLAN.md — ComplianceGateway (mandatory pre-originate check), JurisdictionRouter, country template
+- [ ] 02-04-PLAN.md — US compliance module: TCPA time-of-day, DNC check, consent verification
+- [ ] 02-05-PLAN.md — Call recording, post-call transcription, opt-out capture, main.py integration
 
 ### Phase 3: SMS + Agent Interface + CLI
 **Goal**: An LLM can use Holler as a tool — initiating calls, sending and receiving SMS, and completing the full workflow in four CLI commands from a clean install
@@ -71,5 +78,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
-| 2. Telecom Abstraction + Compliance | 0/TBD | Not started | - |
+| 2. Telecom Abstraction + Compliance | 0/5 | Not started | - |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |
