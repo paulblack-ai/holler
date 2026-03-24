@@ -1,38 +1,48 @@
 """Tests for NumberPool with Redis SPOP/SADD.
 
 Uses a real redis.asyncio.Redis client at localhost:6379.
-Tests are skipped if Redis is not available.
+Tests are skipped if Redis is not available (module not installed or
+server not running).
 """
 import asyncio
 import pytest
 
+# Check redis availability — if redis-py is not installed or server is
+# unreachable, all tests in this module are skipped.
 try:
     import redis.asyncio as aioredis
-    _REDIS_AVAILABLE = False
-    try:
-        # Quick connectivity check
-        def _check_redis():
-            client = aioredis.Redis(host="localhost", port=6379, decode_responses=True)
-            loop = asyncio.new_event_loop()
-            try:
-                loop.run_until_complete(client.ping())
-                return True
-            except Exception:
-                return False
-            finally:
-                loop.run_until_complete(client.aclose())
-                loop.close()
-        _REDIS_AVAILABLE = _check_redis()
-    except Exception:
-        _REDIS_AVAILABLE = False
+    _REDIS_MODULE_AVAILABLE = True
 except ImportError:
-    _REDIS_AVAILABLE = False
+    _REDIS_MODULE_AVAILABLE = False
+
+_REDIS_SERVER_AVAILABLE = False
+if _REDIS_MODULE_AVAILABLE:
+    def _check_redis():
+        client = aioredis.Redis(host="localhost", port=6379, decode_responses=True)
+        loop = asyncio.new_event_loop()
+        try:
+            loop.run_until_complete(client.ping())
+            return True
+        except Exception:
+            return False
+        finally:
+            try:
+                loop.run_until_complete(client.aclose())
+            except Exception:
+                pass
+            loop.close()
+    _REDIS_SERVER_AVAILABLE = _check_redis()
+
+_REDIS_AVAILABLE = _REDIS_MODULE_AVAILABLE and _REDIS_SERVER_AVAILABLE
 
 REDIS_SKIP = pytest.mark.skipif(
     not _REDIS_AVAILABLE,
-    reason="Redis not available at localhost:6379"
+    reason="Redis not available (redis-py not installed or server not running at localhost:6379)"
 )
 
+
+# Always import pool module — it should be importable even if redis is not installed
+# because the import of redis happens at runtime, not at module load
 from holler.core.telecom.pool import NumberPool, NumberPoolExhaustedError
 
 # Use a test-specific key to avoid colliding with production pool
@@ -45,7 +55,7 @@ def get_redis():
 
 
 def run(coro):
-    """Run a coroutine synchronously using a dedicated event loop."""
+    """Run a coroutine synchronously using the default event loop."""
     return asyncio.get_event_loop().run_until_complete(coro)
 
 
@@ -142,6 +152,7 @@ def test_initialize_is_idempotent():
         pool = NumberPool(client, pool_key=TEST_POOL_KEY)
         try:
             dids = ["+15550006666", "+15550007777"]
+            await cleanup(client)
             await pool.initialize(dids)
             await pool.initialize(dids)  # Second call — should not duplicate
             count = await pool.available()
