@@ -1,0 +1,22 @@
+<include>
+  <context name="default">
+    <!-- Inbound calls: answer and connect to audio stream WebSocket -->
+    <extension name="inbound_agent">
+      <condition field="destination_number" expression="^(\d+)$">
+        <action application="answer"/>
+        <action application="set" data="RECORD_STEREO=true"/>
+        <action application="audio_stream" data="ws://host.docker.internal:8765/voice/${uuid} mono 16k"/>
+        <action application="park"/>
+      </condition>
+    </extension>
+  </context>
+
+  <context name="public">
+    <!-- Inbound from SIP trunk routes to default context -->
+    <extension name="public_to_default">
+      <condition field="destination_number" expression="^(\d+)$">
+        <action application="transfer" data="$1 XML default"/>
+      </condition>
+    </extension>
+  </context>
+</include>

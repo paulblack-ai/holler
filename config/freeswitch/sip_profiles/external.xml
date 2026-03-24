@@ -1,0 +1,19 @@
+<profile name="external">
+  <gateways>
+    <gateway name="sip_trunk">
+      <param name="username" value="$${TRUNK_USER}"/>
+      <param name="password" value="$${TRUNK_PASSWORD}"/>
+      <param name="proxy" value="$${TRUNK_HOST}"/>
+      <param name="register" value="true"/>
+      <param name="caller-id-in-from" value="false"/>
+      <param name="codec-prefs" value="PCMU,PCMA"/>
+    </gateway>
+  </gateways>
+  <settings>
+    <param name="context" value="public"/>
+    <param name="sip-port" value="5080"/>
+    <param name="rtp-ip" value="$${external_rtp_ip}"/>
+    <param name="sip-ip" value="$${external_sip_ip}"/>
+    <param name="codec-prefs" value="PCMU,PCMA"/>
+  </settings>
+</profile>
