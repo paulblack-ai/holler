@@ -36,9 +36,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **COMP-01**: Compliance gateway is mandatory in the outbound call path — no bypass route exists
 - [ ] **COMP-02**: US module enforces TCPA: prior consent verification, caller identification, time-of-day restrictions (8am-9pm recipient local time)
-- [ ] **COMP-03**: US module performs DNC (Do Not Call) list check before call connects
+- [x] **COMP-03**: US module performs DNC (Do Not Call) list check before call connects
 - [ ] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
-- [ ] **COMP-05**: Audit log records every compliance check with timestamp, result, and call context
+- [x] **COMP-05**: Audit log records every compliance check with timestamp, result, and call context
 - [ ] **COMP-06**: Country module plugin interface allows adding new jurisdictions without modifying core
 - [ ] **COMP-07**: Country module template (`_template/`) scaffolds a new jurisdiction with documented contract
 
@@ -123,9 +123,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEL-03 | Phase 2 | Pending |
 | COMP-01 | Phase 2 | Pending |
 | COMP-02 | Phase 2 | Pending |
-| COMP-03 | Phase 2 | Pending |
+| COMP-03 | Phase 2 | Complete |
 | COMP-04 | Phase 2 | Pending |
-| COMP-05 | Phase 2 | Pending |
+| COMP-05 | Phase 2 | Complete |
 | COMP-06 | Phase 2 | Pending |
 | COMP-07 | Phase 2 | Pending |
 | SMS-01 | Phase 3 | Pending |
