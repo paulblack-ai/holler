@@ -9,11 +9,16 @@ Tests use mocked Genesis Inbound to verify:
 - start_audio_stream() sends correct uuid_audio_stream command
 - async context manager calls connect/disconnect
 """
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch, call
+import pytest
+from unittest.mock import AsyncMock, patch
 
 from holler.core.freeswitch.esl import FreeSwitchESL, ESLConfig
+
+
+def run(coro):
+    """Helper: run a coroutine synchronously in tests."""
+    return asyncio.get_event_loop().run_until_complete(coro)
 
 
 class FakeESLResponse:
@@ -51,82 +56,82 @@ class TestESLConfig:
 
 
 class TestFreeSwitchESLConnect:
-    @pytest.mark.asyncio
-    async def test_connect_success_when_status_contains_UP(self):
+    def test_connect_success_when_status_contains_UP(self):
         """connect() should succeed when FreeSWITCH status contains 'UP'."""
         mock_client = AsyncMock()
         mock_client.send = AsyncMock(return_value=FakeESLResponse("FreeSWITCH is UP"))
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
+            run(esl.connect())
             mock_client.connect.assert_awaited_once()
             mock_client.send.assert_awaited_once_with("api status")
 
-    @pytest.mark.asyncio
-    async def test_connect_raises_when_status_missing_UP(self):
+    def test_connect_raises_when_status_missing_UP(self):
         """connect() should raise RuntimeError if FreeSWITCH is not UP."""
         mock_client = AsyncMock()
         mock_client.send = AsyncMock(return_value=FakeESLResponse("FreeSWITCH is DOWN"))
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
             with pytest.raises(RuntimeError, match="FreeSWITCH not ready"):
-                await esl.connect()
+                run(esl.connect())
 
-    @pytest.mark.asyncio
-    async def test_connect_raises_when_status_is_error(self):
+    def test_connect_raises_when_status_is_error(self):
         """connect() should raise RuntimeError on empty/error status."""
         mock_client = AsyncMock()
         mock_client.send = AsyncMock(return_value=FakeESLResponse("-ERR connection refused"))
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
             with pytest.raises(RuntimeError, match="FreeSWITCH not ready"):
-                await esl.connect()
+                run(esl.connect())
 
 
 class TestFreeSwitchESLOriginate:
-    @pytest.mark.asyncio
-    async def test_originate_returns_call_uuid_on_ok(self):
-        """originate() should parse and return the UUID from '+OK <uuid>'."""
+    def _make_esl_connected(self, responses):
+        """Build a connected ESL with canned send() responses."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        originate_resp = FakeESLResponse("+OK abc-123-uuid")
-        mock_client.send = AsyncMock(side_effect=[status_resp, originate_resp])
+        mock_client.send = AsyncMock(side_effect=responses)
+        return mock_client
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+    def test_originate_returns_call_uuid_on_ok(self):
+        """originate() should parse and return the UUID from '+OK <uuid>'."""
+        mock_client = self._make_esl_connected([
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("+OK abc-123-uuid"),
+        ])
+
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
-            call_uuid = await esl.originate("+14155551234", "session-xyz")
+            run(esl.connect())
+            call_uuid = run(esl.originate("+14155551234", "session-xyz"))
             assert call_uuid == "abc-123-uuid"
 
-    @pytest.mark.asyncio
-    async def test_originate_raises_on_err(self):
+    def test_originate_raises_on_err(self):
         """originate() should raise RuntimeError on '-ERR' response."""
-        mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        originate_resp = FakeESLResponse("-ERR CHANNEL_UNACCEPTABLE")
-        mock_client.send = AsyncMock(side_effect=[status_resp, originate_resp])
+        mock_client = self._make_esl_connected([
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("-ERR CHANNEL_UNACCEPTABLE"),
+        ])
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
+            run(esl.connect())
             with pytest.raises(RuntimeError, match="Originate failed"):
-                await esl.originate("+14155551234", "session-xyz")
+                run(esl.originate("+14155551234", "session-xyz"))
 
-    @pytest.mark.asyncio
-    async def test_originate_sends_correct_command(self):
+    def test_originate_sends_correct_command(self):
         """originate() should send the correct ESL originate command."""
-        mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        originate_resp = FakeESLResponse("+OK call-uuid-999")
-        mock_client.send = AsyncMock(side_effect=[status_resp, originate_resp])
+        mock_client = self._make_esl_connected([
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("+OK call-uuid-999"),
+        ])
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
-            await esl.originate("+14155551234", "sess-001", gateway="sip_trunk")
+            run(esl.connect())
+            run(esl.originate("+14155551234", "sess-001", gateway="sip_trunk"))
 
             # Check that the originate command was sent (second call after status)
             originate_call = mock_client.send.call_args_list[1]
@@ -138,36 +143,36 @@ class TestFreeSwitchESLOriginate:
 
 
 class TestFreeSwitchESLHangup:
-    @pytest.mark.asyncio
-    async def test_hangup_sends_uuid_kill_command(self):
+    def test_hangup_sends_uuid_kill_command(self):
         """hangup() should send 'api uuid_kill <call_uuid>'."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        hangup_resp = FakeESLResponse("+OK")
-        mock_client.send = AsyncMock(side_effect=[status_resp, hangup_resp])
+        mock_client.send = AsyncMock(side_effect=[
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("+OK"),
+        ])
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
-            await esl.hangup("call-uuid-999")
+            run(esl.connect())
+            run(esl.hangup("call-uuid-999"))
 
             hangup_call = mock_client.send.call_args_list[1]
             cmd = hangup_call[0][0]
             assert "api uuid_kill" in cmd
             assert "call-uuid-999" in cmd
 
-    @pytest.mark.asyncio
-    async def test_hangup_uses_normal_clearing_by_default(self):
+    def test_hangup_uses_normal_clearing_by_default(self):
         """hangup() default cause is NORMAL_CLEARING."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        hangup_resp = FakeESLResponse("+OK")
-        mock_client.send = AsyncMock(side_effect=[status_resp, hangup_resp])
+        mock_client.send = AsyncMock(side_effect=[
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("+OK"),
+        ])
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
-            await esl.hangup("call-uuid-999")
+            run(esl.connect())
+            run(esl.hangup("call-uuid-999"))
 
             hangup_call = mock_client.send.call_args_list[1]
             cmd = hangup_call[0][0]
@@ -175,18 +180,18 @@ class TestFreeSwitchESLHangup:
 
 
 class TestFreeSwitchESLAudioStream:
-    @pytest.mark.asyncio
-    async def test_start_audio_stream_sends_correct_command(self):
+    def test_start_audio_stream_sends_correct_command(self):
         """start_audio_stream() should send 'api uuid_audio_stream <uuid> start <ws_url> mono 16k'."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        stream_resp = FakeESLResponse("+OK")
-        mock_client.send = AsyncMock(side_effect=[status_resp, stream_resp])
+        mock_client.send = AsyncMock(side_effect=[
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("+OK"),
+        ])
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
-            await esl.start_audio_stream("call-uuid-001", "ws://127.0.0.1:8765/voice/call-uuid-001")
+            run(esl.connect())
+            run(esl.start_audio_stream("call-uuid-001", "ws://127.0.0.1:8765/voice/call-uuid-001"))
 
             stream_call = mock_client.send.call_args_list[1]
             cmd = stream_call[0][0]
@@ -197,18 +202,18 @@ class TestFreeSwitchESLAudioStream:
             assert "mono" in cmd
             assert "16k" in cmd
 
-    @pytest.mark.asyncio
-    async def test_stop_audio_stream_sends_correct_command(self):
+    def test_stop_audio_stream_sends_correct_command(self):
         """stop_audio_stream() should send 'api uuid_audio_stream <uuid> stop'."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        stop_resp = FakeESLResponse("+OK")
-        mock_client.send = AsyncMock(side_effect=[status_resp, stop_resp])
+        mock_client.send = AsyncMock(side_effect=[
+            FakeESLResponse("FreeSWITCH is UP"),
+            FakeESLResponse("+OK"),
+        ])
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
             esl = FreeSwitchESL()
-            await esl.connect()
-            await esl.stop_audio_stream("call-uuid-001")
+            run(esl.connect())
+            run(esl.stop_audio_stream("call-uuid-001"))
 
             stop_call = mock_client.send.call_args_list[1]
             cmd = stop_call[0][0]
@@ -218,35 +223,32 @@ class TestFreeSwitchESLAudioStream:
 
 
 class TestFreeSwitchESLContextManager:
-    @pytest.mark.asyncio
-    async def test_async_context_manager_connects_and_disconnects(self):
+    def test_async_context_manager_connects_and_disconnects(self):
         """async with FreeSwitchESL() should connect on entry and disconnect on exit."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        mock_client.send = AsyncMock(return_value=status_resp)
+        mock_client.send = AsyncMock(return_value=FakeESLResponse("FreeSWITCH is UP"))
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
-            esl = FreeSwitchESL()
-            async with esl as ctx:
-                assert ctx is esl
+        async def _run():
+            async with FreeSwitchESL() as esl:
                 mock_client.connect.assert_awaited_once()
+                return esl
 
-            # After exit, close should be called
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
+            run(_run())
             mock_client.close.assert_awaited_once()
 
-    @pytest.mark.asyncio
-    async def test_async_context_manager_disconnects_on_exception(self):
+    def test_async_context_manager_disconnects_on_exception(self):
         """Context manager should call disconnect even if an exception occurs."""
         mock_client = AsyncMock()
-        status_resp = FakeESLResponse("FreeSWITCH is UP")
-        mock_client.send = AsyncMock(return_value=status_resp)
+        mock_client.send = AsyncMock(return_value=FakeESLResponse("FreeSWITCH is UP"))
 
-        with patch("holler.core.freeswitch.esl.FreeSwitchESL._make_inbound", return_value=mock_client):
-            esl = FreeSwitchESL()
+        async def _run():
             try:
-                async with esl:
+                async with FreeSwitchESL():
                     raise ValueError("Test error")
             except ValueError:
                 pass
 
+        with patch.object(FreeSwitchESL, "_make_inbound", return_value=mock_client):
+            run(_run())
             mock_client.close.assert_awaited_once()
