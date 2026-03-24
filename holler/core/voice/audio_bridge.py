@@ -52,11 +52,14 @@ class AudioBridge:
             await self._server.wait_closed()
             logger.info("audio_bridge.stopped")
 
-    async def _handle_connection(self, websocket, path: str) -> None:
+    async def _handle_connection(self, websocket) -> None:
         """Handle a single WebSocket connection from mod_audio_stream.
 
         Path format: /voice/{call_uuid}
+        Compatible with websockets 13+ (path is websocket.path, not a separate arg).
         """
+        # websockets 13+: path is in websocket.request.path
+        path = websocket.request.path if hasattr(websocket, "request") and websocket.request else "/"
         call_uuid = path.strip("/").split("/")[-1]
         session_uuid = call_uuid  # Phase 1: session_uuid = call_uuid
         self.pipeline.create_session(call_uuid, session_uuid)
