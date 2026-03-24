@@ -28,7 +28,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Audio from the caller flows through local faster-whisper STT and produces a partial transcript stream; local Kokoro TTS produces audio streamed back to the call
   4. The full voice loop (human speaks → VAD gates → STT partial → LLM response → TTS first chunk delivered) completes in under 800ms measured end-to-end
   5. Human barge-in stops TTS playback mid-utterance; silence gates STT to prevent hallucination
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Project skeleton, Docker Compose (FreeSWITCH + Redis), FreeSWITCH configuration
+- [ ] 01-02-PLAN.md — Voice pipeline components: STT, TTS, VAD, audio resampler
+- [ ] 01-03-PLAN.md — FreeSWITCH ESL call control: originate, answer, hangup, event routing
+- [ ] 01-04-PLAN.md — Audio bridge WebSocket server, LLM client, streaming pipeline coordinator
+- [ ] 01-05-PLAN.md — Application entry point, config, integration tests, live verification
+
 **UI hint**: no
 
 ### Phase 2: Telecom Abstraction + Compliance
@@ -62,6 +70,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. FreeSWITCH + Voice Pipeline | 0/TBD | Not started | - |
+| 1. FreeSWITCH + Voice Pipeline | 0/5 | Planning complete | - |
 | 2. Telecom Abstraction + Compliance | 0/TBD | Not started | - |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |
