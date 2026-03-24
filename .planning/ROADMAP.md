@@ -52,7 +52,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Foundational types (ComplianceModule ABC, TelecomSession), NumberPool, config extensions
+- [x] 02-01-PLAN.md — Foundational types (ComplianceModule ABC, TelecomSession), NumberPool, config extensions
 - [x] 02-02-PLAN.md — Data layer: ConsentDB (append-only), DNCList, AuditLog (JSONL + SQLite)
 - [ ] 02-03-PLAN.md — ComplianceGateway (mandatory pre-originate check), JurisdictionRouter, country template
 - [ ] 02-04-PLAN.md — US compliance module: TCPA time-of-day, DNC check, consent verification

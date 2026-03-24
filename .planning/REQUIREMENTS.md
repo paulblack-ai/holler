@@ -28,8 +28,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Telecom Abstraction
 
-- [ ] **TEL-01**: Number pool manager checks out a DID per session and releases it on call end
-- [ ] **TEL-02**: Session state tracks conversation context, turn history, and tool-call state for the call lifetime
+- [x] **TEL-01**: Number pool manager checks out a DID per session and releases it on call end
+- [x] **TEL-02**: Session state tracks conversation context, turn history, and tool-call state for the call lifetime
 - [ ] **TEL-03**: Jurisdiction router maps E.164 destination prefix to the correct country compliance module
 
 ### Compliance
@@ -39,7 +39,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **COMP-03**: US module performs DNC (Do Not Call) list check before call connects
 - [ ] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
 - [x] **COMP-05**: Audit log records every compliance check with timestamp, result, and call context
-- [ ] **COMP-06**: Country module plugin interface allows adding new jurisdictions without modifying core
+- [x] **COMP-06**: Country module plugin interface allows adding new jurisdictions without modifying core
 - [ ] **COMP-07**: Country module template (`_template/`) scaffolds a new jurisdiction with documented contract
 
 ### SMS
@@ -118,15 +118,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VOICE-05 | Phase 1 | Complete |
 | VOICE-06 | Phase 1 | Complete |
 | VOICE-07 | Phase 1 | Complete |
-| TEL-01 | Phase 2 | Pending |
-| TEL-02 | Phase 2 | Pending |
+| TEL-01 | Phase 2 | Complete |
+| TEL-02 | Phase 2 | Complete |
 | TEL-03 | Phase 2 | Pending |
 | COMP-01 | Phase 2 | Pending |
 | COMP-02 | Phase 2 | Pending |
 | COMP-03 | Phase 2 | Complete |
 | COMP-04 | Phase 2 | Pending |
 | COMP-05 | Phase 2 | Complete |
-| COMP-06 | Phase 2 | Pending |
+| COMP-06 | Phase 2 | Complete |
 | COMP-07 | Phase 2 | Pending |
 | SMS-01 | Phase 3 | Pending |
 | SMS-02 | Phase 3 | Pending |
