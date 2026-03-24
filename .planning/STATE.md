@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-03-24T23:13:00.826Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-03-24T23:19:55.922Z"
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 10
 ---
 
 # Project State
@@ -55,6 +55,7 @@ Plan: 5 of 5
 | Phase 02-telecom-abstraction-compliance P01 | 5min | 3 tasks | 10 files |
 | Phase 02-telecom-abstraction-compliance P03 | 15min | 3 tasks | 6 files |
 | Phase 02-telecom-abstraction-compliance P04 | 4 | 2 tasks | 6 files |
+| Phase 02-telecom-abstraction-compliance P05 | 4min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 02-telecom-abstraction-compliance]: TemplateComplianceModule denies all calls (fail-closed default) — prevents accidentally allowing non-compliant calls from unimplemented template
 - [Phase 02-telecom-abstraction-compliance]: check_time_of_day() accepts optional now parameter for deterministic testing without mocking
 - [Phase 02-telecom-abstraction-compliance]: US compliance check order: DNC -> time-of-day -> consent (cheapest-first I/O)
+- [Phase 02-telecom-abstraction-compliance]: Transcript WhisperModel is a separate CPU instance from live STT model — Pitfall 6 prevents model contention
+- [Phase 02-telecom-abstraction-compliance]: stop_recording() sends explicit uuid_record stop — does not rely on RECORD_STOP event (Pitfall 1)
+- [Phase 02-telecom-abstraction-compliance]: telecom_sessions dict in main() closure — scoped to call path lifetime
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T23:13:00.816Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-03-24T23:19:55.910Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None

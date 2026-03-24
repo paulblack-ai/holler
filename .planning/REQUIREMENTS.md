@@ -12,8 +12,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CALL-01**: Agent can initiate an outbound voice call to a PSTN number via FreeSWITCH ESL
 - [x] **CALL-02**: FreeSWITCH softswitch routes SIP calls to/from a configured SIP trunk
 - [x] **CALL-03**: Agent can answer and route an inbound call to an agent session
-- [ ] **CALL-04**: Call recording captures audio and stores as retrievable file (WAV/MP3)
-- [ ] **CALL-05**: Post-call transcript is generated and persisted alongside recording
+- [x] **CALL-04**: Call recording captures audio and stores as retrievable file (WAV/MP3)
+- [x] **CALL-05**: Post-call transcript is generated and persisted alongside recording
 - [x] **CALL-06**: Call terminates gracefully on agent instruction, error, or remote hangup
 
 ### Voice Pipeline
@@ -37,7 +37,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **COMP-01**: Compliance gateway is mandatory in the outbound call path — no bypass route exists
 - [x] **COMP-02**: US module enforces TCPA: prior consent verification, caller identification, time-of-day restrictions (8am-9pm recipient local time)
 - [x] **COMP-03**: US module performs DNC (Do Not Call) list check before call connects
-- [ ] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
+- [x] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
 - [x] **COMP-05**: Audit log records every compliance check with timestamp, result, and call context
 - [x] **COMP-06**: Country module plugin interface allows adding new jurisdictions without modifying core
 - [x] **COMP-07**: Country module template (`_template/`) scaffolds a new jurisdiction with documented contract
@@ -108,8 +108,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CALL-01 | Phase 1 | Complete |
 | CALL-02 | Phase 1 | Complete |
 | CALL-03 | Phase 1 | Complete |
-| CALL-04 | Phase 2 | Pending |
-| CALL-05 | Phase 2 | Pending |
+| CALL-04 | Phase 2 | Complete |
+| CALL-05 | Phase 2 | Complete |
 | CALL-06 | Phase 1 | Complete |
 | VOICE-01 | Phase 1 | Complete |
 | VOICE-02 | Phase 1 | Complete |
@@ -124,7 +124,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-01 | Phase 2 | Complete |
 | COMP-02 | Phase 2 | Complete |
 | COMP-03 | Phase 2 | Complete |
-| COMP-04 | Phase 2 | Pending |
+| COMP-04 | Phase 2 | Complete |
 | COMP-05 | Phase 2 | Complete |
 | COMP-06 | Phase 2 | Complete |
 | COMP-07 | Phase 2 | Complete |

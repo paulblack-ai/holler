@@ -13,7 +13,7 @@ Three phases build from raw infrastructure to a fully operable, legally complian
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: FreeSWITCH + Voice Pipeline** - Working voice call through local hardware with streaming STT/TTS under 800ms
-- [ ] **Phase 2: Telecom Abstraction + Compliance** - Session state, number pool, mandatory compliance gateway, US module, call records
+- [x] **Phase 2: Telecom Abstraction + Compliance** - Session state, number pool, mandatory compliance gateway, US module, call records (completed 2026-03-24)
 - [ ] **Phase 3: SMS + Agent Interface + CLI** - SMPP messaging, tool-use protocol, and four-command onboarding
 
 ## Phase Details
@@ -54,9 +54,9 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Foundational types (ComplianceModule ABC, TelecomSession), NumberPool, config extensions
 - [x] 02-02-PLAN.md — Data layer: ConsentDB (append-only), DNCList, AuditLog (JSONL + SQLite)
-- [ ] 02-03-PLAN.md — ComplianceGateway (mandatory pre-originate check), JurisdictionRouter, country template
+- [x] 02-03-PLAN.md — ComplianceGateway (mandatory pre-originate check), JurisdictionRouter, country template
 - [x] 02-04-PLAN.md — US compliance module: TCPA time-of-day, DNC check, consent verification
-- [ ] 02-05-PLAN.md — Call recording, post-call transcription, opt-out capture, main.py integration
+- [x] 02-05-PLAN.md — Call recording, post-call transcription, opt-out capture, main.py integration
 
 ### Phase 3: SMS + Agent Interface + CLI
 **Goal**: An LLM can use Holler as a tool — initiating calls, sending and receiving SMS, and completing the full workflow in four CLI commands from a clean install
@@ -78,5 +78,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
-| 2. Telecom Abstraction + Compliance | 3/5 | In Progress|  |
+| 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |
