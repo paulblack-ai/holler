@@ -9,22 +9,22 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Call Management
 
-- [ ] **CALL-01**: Agent can initiate an outbound voice call to a PSTN number via FreeSWITCH ESL
+- [x] **CALL-01**: Agent can initiate an outbound voice call to a PSTN number via FreeSWITCH ESL
 - [x] **CALL-02**: FreeSWITCH softswitch routes SIP calls to/from a configured SIP trunk
-- [ ] **CALL-03**: Agent can answer and route an inbound call to an agent session
+- [x] **CALL-03**: Agent can answer and route an inbound call to an agent session
 - [ ] **CALL-04**: Call recording captures audio and stores as retrievable file (WAV/MP3)
 - [ ] **CALL-05**: Post-call transcript is generated and persisted alongside recording
-- [ ] **CALL-06**: Call terminates gracefully on agent instruction, error, or remote hangup
+- [x] **CALL-06**: Call terminates gracefully on agent instruction, error, or remote hangup
 
 ### Voice Pipeline
 
-- [ ] **VOICE-01**: STT runs locally via faster-whisper with streaming partial transcripts
-- [ ] **VOICE-02**: TTS runs locally via Kokoro-ONNX (default) with streaming audio output
+- [x] **VOICE-01**: STT runs locally via faster-whisper with streaming partial transcripts
+- [x] **VOICE-02**: TTS runs locally via Kokoro-ONNX (default) with streaming audio output
 - [ ] **VOICE-03**: Full voice loop (STT → LLM → TTS) completes in under 800ms round-trip
-- [ ] **VOICE-04**: Voice Activity Detection (VAD) gates STT to prevent hallucination on silence
-- [ ] **VOICE-05**: Turn detection identifies when human stops speaking using VAD + silence threshold
+- [x] **VOICE-04**: Voice Activity Detection (VAD) gates STT to prevent hallucination on silence
+- [x] **VOICE-05**: Turn detection identifies when human stops speaking using VAD + silence threshold
 - [ ] **VOICE-06**: Barge-in detection stops TTS playback when human interrupts mid-utterance
-- [ ] **VOICE-07**: Audio resampling handles 8kHz PSTN G.711 to 16kHz Whisper input without quality loss
+- [x] **VOICE-07**: Audio resampling handles 8kHz PSTN G.711 to 16kHz Whisper input without quality loss
 
 ### Telecom Abstraction
 
@@ -105,19 +105,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CALL-01 | Phase 1 | Pending |
+| CALL-01 | Phase 1 | Complete |
 | CALL-02 | Phase 1 | Complete |
-| CALL-03 | Phase 1 | Pending |
+| CALL-03 | Phase 1 | Complete |
 | CALL-04 | Phase 2 | Pending |
 | CALL-05 | Phase 2 | Pending |
-| CALL-06 | Phase 1 | Pending |
-| VOICE-01 | Phase 1 | Pending |
-| VOICE-02 | Phase 1 | Pending |
+| CALL-06 | Phase 1 | Complete |
+| VOICE-01 | Phase 1 | Complete |
+| VOICE-02 | Phase 1 | Complete |
 | VOICE-03 | Phase 1 | Pending |
-| VOICE-04 | Phase 1 | Pending |
-| VOICE-05 | Phase 1 | Pending |
+| VOICE-04 | Phase 1 | Complete |
+| VOICE-05 | Phase 1 | Complete |
 | VOICE-06 | Phase 1 | Pending |
-| VOICE-07 | Phase 1 | Pending |
+| VOICE-07 | Phase 1 | Complete |
 | TEL-01 | Phase 2 | Pending |
 | TEL-02 | Phase 2 | Pending |
 | TEL-03 | Phase 2 | Pending |

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 01-freeswitch-voice-pipeline/01-01-PLAN.md
-last_updated: "2026-03-24T17:34:06.651Z"
+stopped_at: Completed 01-freeswitch-voice-pipeline-03-PLAN.md
+last_updated: "2026-03-24T17:42:38.347Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
+  completed_plans: 3
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 01 (freeswitch-voice-pipeline) — EXECUTING
-Plan: 2 of 5
+Plan: 4 of 5
 
 ## Performance Metrics
 
@@ -47,6 +47,8 @@ Plan: 2 of 5
 
 *Updated after each plan completion*
 | Phase 01-freeswitch-voice-pipeline P01 | 2 | 3 tasks | 14 files |
+| Phase 01-freeswitch-voice-pipeline P02 | 4 | 3 tasks | 11 files |
+| Phase 01-freeswitch-voice-pipeline P03 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -63,6 +65,11 @@ Recent decisions affecting current work:
 - [Phase 01-freeswitch-voice-pipeline]: FreeSWITCH uses host network mode in Docker — RTP port range (16384-32768) cannot be published via Docker port mapping
 - [Phase 01-freeswitch-voice-pipeline]: mod_audio_stream from amigniter open-source fork — Apache 2.0 compatible, avoids commercial SignalWire dependency
 - [Phase 01-freeswitch-voice-pipeline]: ESL listens on 0.0.0.0:8021 so Python orchestrator on host can connect to FreeSWITCH inside Docker
+- [Phase 01-freeswitch-voice-pipeline]: soxr as primary resampler with scipy fallback; HAS_SOXR feature flag for graceful degradation
+- [Phase 01-freeswitch-voice-pipeline]: Deferred model loading pattern: STTEngine/TTSEngine initialize() called once at startup, not in __init__
+- [Phase 01-freeswitch-voice-pipeline]: VAD set_pipeline_state() accepts optional timestamp for deterministic testing without mocking
+- [Phase 01-freeswitch-voice-pipeline]: _make_inbound() factory method separates Genesis import for testability without Genesis installed
+- [Phase 01-freeswitch-voice-pipeline]: asyncio.get_event_loop().run_until_complete() used in tests since pytest-asyncio not installed on system Python
 
 ### Pending Todos
 
@@ -76,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T17:34:06.639Z
-Stopped at: Completed 01-freeswitch-voice-pipeline/01-01-PLAN.md
+Last session: 2026-03-24T17:42:38.336Z
+Stopped at: Completed 01-freeswitch-voice-pipeline-03-PLAN.md
 Resume file: None

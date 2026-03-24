@@ -32,8 +32,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Project skeleton, Docker Compose (FreeSWITCH + Redis), FreeSWITCH configuration
-- [ ] 01-02-PLAN.md — Voice pipeline components: STT, TTS, VAD, audio resampler
-- [ ] 01-03-PLAN.md — FreeSWITCH ESL call control: originate, answer, hangup, event routing
+- [x] 01-02-PLAN.md — Voice pipeline components: STT, TTS, VAD, audio resampler
+- [x] 01-03-PLAN.md — FreeSWITCH ESL call control: originate, answer, hangup, event routing
 - [ ] 01-04-PLAN.md — Audio bridge WebSocket server, LLM client, streaming pipeline coordinator
 - [ ] 01-05-PLAN.md — Application entry point, config, integration tests, live verification
 
