@@ -34,7 +34,7 @@ Plans:
 - [x] 01-01-PLAN.md — Project skeleton, Docker Compose (FreeSWITCH + Redis), FreeSWITCH configuration
 - [x] 01-02-PLAN.md — Voice pipeline components: STT, TTS, VAD, audio resampler
 - [x] 01-03-PLAN.md — FreeSWITCH ESL call control: originate, answer, hangup, event routing
-- [ ] 01-04-PLAN.md — Audio bridge WebSocket server, LLM client, streaming pipeline coordinator
+- [x] 01-04-PLAN.md — Audio bridge WebSocket server, LLM client, streaming pipeline coordinator
 - [ ] 01-05-PLAN.md — Application entry point, config, integration tests, live verification
 
 **UI hint**: no
@@ -70,6 +70,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. FreeSWITCH + Voice Pipeline | 3/5 | In Progress|  |
+| 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 0/TBD | Not started | - |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |

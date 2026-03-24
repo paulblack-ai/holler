@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 01-freeswitch-voice-pipeline-04-PLAN.md
-last_updated: "2026-03-24T17:47:54.483Z"
+stopped_at: "Checkpoint 01-05 Task 3: awaiting human verification of Docker stack"
+last_updated: "2026-03-24T17:54:44.643Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -50,6 +50,7 @@ Plan: 5 of 5
 | Phase 01-freeswitch-voice-pipeline P02 | 4 | 3 tasks | 11 files |
 | Phase 01-freeswitch-voice-pipeline P03 | 3 | 2 tasks | 3 files |
 | Phase 01-freeswitch-voice-pipeline P04 | 3min | 2 tasks | 4 files |
+| Phase 01 P05 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 01-freeswitch-voice-pipeline]: asyncio.Queue token_queue pattern: LLM streams into queue, TTS consumes from same queue — enables streaming TTS before LLM response complete (pipeline coordinator)
 - [Phase 01-freeswitch-voice-pipeline]: _tts_cancel asyncio.Event for barge-in coordination: shared between feed_tokens() and TTS loop, avoids hard task cancellation race conditions
 - [Phase 01-freeswitch-voice-pipeline]: base64-encoded JSON for TTS audio to FreeSWITCH (mod_audio_stream protocol) — safer than raw binary, optimize later
+- [Phase 01-freeswitch-voice-pipeline]: Python 3.9 compat: use Optional[T] not T|None union syntax in main.py
+- [Phase 01-freeswitch-voice-pipeline]: websockets 15.x: handler takes single websocket arg; path via websocket.request.path
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T17:47:54.471Z
-Stopped at: Completed 01-freeswitch-voice-pipeline-04-PLAN.md
+Last session: 2026-03-24T17:54:36.831Z
+Stopped at: Checkpoint 01-05 Task 3: awaiting human verification of Docker stack
 Resume file: None
