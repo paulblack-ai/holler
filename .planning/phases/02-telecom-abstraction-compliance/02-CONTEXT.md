@@ -19,7 +19,7 @@ Calls become session-aware, number-pool-managed, jurisdiction-routed, and struct
 - **D-03:** No call can originate without a checked-out DID. The originate path must acquire a DID before calling `esl.originate()`. If pool is empty, call fails with a clear error.
 
 ### Session state architecture
-- **D-04:** Telecom session state stored in Redis hash per session. Keys include: session_uuid, call_uuid, did, destination, compliance_result, consent_status, recording_path, timestamps. TTL-based cleanup on session end.
+- **D-04:** Telecom session state stored in-memory as Python dataclass (dict keyed by call_uuid). Sufficient for single-process v1 deployment. Redis session persistence deferred to v2 when multi-process/replicated deployment is needed. Fields: session_uuid, call_uuid, did, destination, compliance_result, consent_status, recording_path, timestamps.
 - **D-05:** New `TelecomSession` class wraps Phase 1's `VoiceSession`. TelecomSession adds DID allocation, compliance state, recording reference, and jurisdiction context. VoiceSession remains voice-pipeline-only (STT/TTS/LLM state). Composition, not inheritance.
 - **D-06:** Session state is the single source of truth for call lifecycle. All components (compliance gateway, recording, audit log) read/write through the session object.
 
