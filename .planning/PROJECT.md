@@ -15,14 +15,17 @@ An AI agent can make a phone call from locally-hosted infrastructure with a sing
 - ✓ FreeSWITCH softswitch handles SIP call routing — Phase 1
 - ✓ SIP trunk integration for PSTN connectivity — Phase 1
 - ✓ Voice pipeline runs fully local (STT + TTS) with streaming architecture — Phase 1 (latency pending live verification)
+- ✓ Number pool management (checkout/release of DIDs per interaction) — Phase 2
+- ✓ Session state tracks conversation context across a call lifecycle — Phase 2
+- ✓ Jurisdiction router dispatches calls through per-country compliance gateways — Phase 2
+- ✓ US compliance gateway enforces TCPA, STIR/SHAKEN, time-of-day, DNC — Phase 2
+- ✓ Country module plugin interface with scaffold template — Phase 2
+- ✓ Recording and live transcription pipeline — Phase 2
+- ✓ Consent/opt-out state machine enforced in the call path — Phase 2
 
 ### Active
 
 - [ ] Agent can make an outbound voice call via tool invocation
-- [ ] Number pool management (checkout/release of DIDs per interaction)
-- [ ] Number pool management (checkout/release of DIDs per interaction)
-- [ ] Session state tracks conversation context across a call lifecycle
-- [ ] Jurisdiction router dispatches calls through per-country compliance gateways
 - [ ] US compliance gateway enforces TCPA, STIR/SHAKEN, time-of-day, DNC
 - [ ] Country module plugin interface with scaffold template
 - [ ] Agent can send/receive SMS via SMPP or GSM modem
@@ -91,4 +94,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after Phase 1 completion*
+*Last updated: 2026-03-24 after Phase 2 completion*
