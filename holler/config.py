@@ -15,6 +15,50 @@ from holler.core.voice.audio_bridge import AudioBridgeConfig
 
 
 @dataclass
+class PoolConfig:
+    """Configuration for the DID number pool.
+
+    Per D-01, D-02: Pool stored in Redis SET, initialized from config-defined
+    list of DIDs.
+    """
+    redis_url: str = "redis://localhost:6379"
+    pool_key: str = "holler:did_pool"
+    dids: str = ""  # Comma-separated E.164 DIDs, or empty (populate manually)
+
+
+@dataclass
+class ComplianceConfig:
+    """Configuration for the compliance gateway and country modules.
+
+    Per D-07, D-08: Compliance gateway is mandatory in the outbound call path.
+    Per D-14: Consent records stored in SQLite (append-only).
+    Per D-20, D-21: Audit log written as append-only JSONL + SQLite index.
+    """
+    consent_db_path: str = "./data/consent.db"
+    dnc_db_path: str = "./data/dnc.db"
+    audit_log_dir: str = "./data/audit"
+    audit_db_path: str = "./data/audit.db"
+    check_timeout_s: float = 2.0
+    opt_out_dtmf_key: str = "9"
+    opt_out_keywords: str = "stop,remove me,do not call"
+
+
+@dataclass
+class RecordingConfig:
+    """Configuration for call recording and post-call transcription.
+
+    Per D-17: Recording via FreeSWITCH uuid_record ESL command.
+    Per D-18: Post-call transcript via faster-whisper (background task).
+    """
+    enabled: bool = True
+    recordings_dir: str = "./recordings"
+    sample_rate: int = 8000
+    transcript_enabled: bool = True
+    transcript_device: str = "cpu"
+    transcript_compute_type: str = "int8"
+
+
+@dataclass
 class HollerConfig:
     """Top-level configuration assembled from environment."""
     esl: ESLConfig
@@ -23,6 +67,9 @@ class HollerConfig:
     llm: LLMConfig
     vad: VADConfig
     audio_bridge: AudioBridgeConfig
+    pool: PoolConfig
+    compliance: ComplianceConfig
+    recording: RecordingConfig
 
     @classmethod
     def from_env(cls) -> "HollerConfig":
@@ -56,5 +103,27 @@ class HollerConfig:
             audio_bridge=AudioBridgeConfig(
                 host=os.getenv("AUDIO_BRIDGE_HOST", "0.0.0.0"),
                 port=int(os.getenv("AUDIO_BRIDGE_PORT", "8765")),
+            ),
+            pool=PoolConfig(
+                redis_url=os.getenv("HOLLER_REDIS_URL", "redis://localhost:6379"),
+                pool_key=os.getenv("HOLLER_POOL_KEY", "holler:did_pool"),
+                dids=os.getenv("HOLLER_POOL_DIDS", ""),
+            ),
+            compliance=ComplianceConfig(
+                consent_db_path=os.getenv("HOLLER_CONSENT_DB", "./data/consent.db"),
+                dnc_db_path=os.getenv("HOLLER_DNC_DB", "./data/dnc.db"),
+                audit_log_dir=os.getenv("HOLLER_AUDIT_LOG_DIR", "./data/audit"),
+                audit_db_path=os.getenv("HOLLER_AUDIT_DB", "./data/audit.db"),
+                check_timeout_s=float(os.getenv("HOLLER_COMPLIANCE_TIMEOUT", "2.0")),
+                opt_out_dtmf_key=os.getenv("HOLLER_OPT_OUT_DTMF", "9"),
+                opt_out_keywords=os.getenv("HOLLER_OPT_OUT_KEYWORDS", "stop,remove me,do not call"),
+            ),
+            recording=RecordingConfig(
+                enabled=os.getenv("HOLLER_RECORDING_ENABLED", "true").lower() == "true",
+                recordings_dir=os.getenv("HOLLER_RECORDINGS_DIR", "./recordings"),
+                sample_rate=int(os.getenv("HOLLER_RECORDING_SAMPLE_RATE", "8000")),
+                transcript_enabled=os.getenv("HOLLER_TRANSCRIPT_ENABLED", "true").lower() == "true",
+                transcript_device=os.getenv("HOLLER_TRANSCRIPT_DEVICE", "cpu"),
+                transcript_compute_type=os.getenv("HOLLER_TRANSCRIPT_COMPUTE_TYPE", "int8"),
             ),
         )
