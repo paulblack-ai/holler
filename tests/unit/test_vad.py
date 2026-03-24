@@ -151,7 +151,7 @@ class TestVADStateBargeIn:
     def test_speech_during_speaking_after_grace_returns_barge_in(self):
         """SPEAKING state + is_speech=True + grace window elapsed -> BARGE_IN."""
         vad = VADState()
-        vad.set_pipeline_state(PipelineState.SPEAKING)
+        vad.set_pipeline_state(PipelineState.SPEAKING, timestamp=0.0)
         # More than 500ms after SPEAKING started
         event = vad.on_audio_frame(is_speech=True, timestamp=0.6)
         assert event == VADEvent.BARGE_IN
@@ -159,7 +159,7 @@ class TestVADStateBargeIn:
     def test_speech_during_speaking_within_grace_returns_none(self):
         """SPEAKING state + is_speech=True + within grace window -> NONE (no barge-in)."""
         vad = VADState()
-        vad.set_pipeline_state(PipelineState.SPEAKING)
+        vad.set_pipeline_state(PipelineState.SPEAKING, timestamp=0.0)
         # Within 500ms grace window
         event = vad.on_audio_frame(is_speech=True, timestamp=0.3)
         assert event != VADEvent.BARGE_IN
@@ -167,7 +167,7 @@ class TestVADStateBargeIn:
     def test_no_barge_in_at_500ms_boundary(self):
         """Barge-in requires strictly > grace_ms, not just at the boundary."""
         vad = VADState()
-        vad.set_pipeline_state(PipelineState.SPEAKING)
+        vad.set_pipeline_state(PipelineState.SPEAKING, timestamp=0.0)
         # Exactly at 500ms - within grace, not beyond
         event = vad.on_audio_frame(is_speech=True, timestamp=0.5)
         # Should not be BARGE_IN
