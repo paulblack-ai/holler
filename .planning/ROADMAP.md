@@ -70,6 +70,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. FreeSWITCH + Voice Pipeline | 1/5 | In Progress|  |
+| 1. FreeSWITCH + Voice Pipeline | 3/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 0/TBD | Not started | - |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |

@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 01-freeswitch-voice-pipeline-03-PLAN.md
-last_updated: "2026-03-24T17:42:38.347Z"
+stopped_at: Completed 01-freeswitch-voice-pipeline-04-PLAN.md
+last_updated: "2026-03-24T17:47:54.483Z"
 progress:
   total_phases: 3
   completed_phases: 0
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 01 (freeswitch-voice-pipeline) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Plan: 4 of 5
 | Phase 01-freeswitch-voice-pipeline P01 | 2 | 3 tasks | 14 files |
 | Phase 01-freeswitch-voice-pipeline P02 | 4 | 3 tasks | 11 files |
 | Phase 01-freeswitch-voice-pipeline P03 | 3 | 2 tasks | 3 files |
+| Phase 01-freeswitch-voice-pipeline P04 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,9 @@ Recent decisions affecting current work:
 - [Phase 01-freeswitch-voice-pipeline]: VAD set_pipeline_state() accepts optional timestamp for deterministic testing without mocking
 - [Phase 01-freeswitch-voice-pipeline]: _make_inbound() factory method separates Genesis import for testability without Genesis installed
 - [Phase 01-freeswitch-voice-pipeline]: asyncio.get_event_loop().run_until_complete() used in tests since pytest-asyncio not installed on system Python
+- [Phase 01-freeswitch-voice-pipeline]: asyncio.Queue token_queue pattern: LLM streams into queue, TTS consumes from same queue — enables streaming TTS before LLM response complete (pipeline coordinator)
+- [Phase 01-freeswitch-voice-pipeline]: _tts_cancel asyncio.Event for barge-in coordination: shared between feed_tokens() and TTS loop, avoids hard task cancellation race conditions
+- [Phase 01-freeswitch-voice-pipeline]: base64-encoded JSON for TTS audio to FreeSWITCH (mod_audio_stream protocol) — safer than raw binary, optimize later
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T17:42:38.336Z
-Stopped at: Completed 01-freeswitch-voice-pipeline-03-PLAN.md
+Last session: 2026-03-24T17:47:54.471Z
+Stopped at: Completed 01-freeswitch-voice-pipeline-04-PLAN.md
 Resume file: None

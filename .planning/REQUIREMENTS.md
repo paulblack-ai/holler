@@ -20,10 +20,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **VOICE-01**: STT runs locally via faster-whisper with streaming partial transcripts
 - [x] **VOICE-02**: TTS runs locally via Kokoro-ONNX (default) with streaming audio output
-- [ ] **VOICE-03**: Full voice loop (STT → LLM → TTS) completes in under 800ms round-trip
+- [x] **VOICE-03**: Full voice loop (STT → LLM → TTS) completes in under 800ms round-trip
 - [x] **VOICE-04**: Voice Activity Detection (VAD) gates STT to prevent hallucination on silence
 - [x] **VOICE-05**: Turn detection identifies when human stops speaking using VAD + silence threshold
-- [ ] **VOICE-06**: Barge-in detection stops TTS playback when human interrupts mid-utterance
+- [x] **VOICE-06**: Barge-in detection stops TTS playback when human interrupts mid-utterance
 - [x] **VOICE-07**: Audio resampling handles 8kHz PSTN G.711 to 16kHz Whisper input without quality loss
 
 ### Telecom Abstraction
@@ -113,10 +113,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CALL-06 | Phase 1 | Complete |
 | VOICE-01 | Phase 1 | Complete |
 | VOICE-02 | Phase 1 | Complete |
-| VOICE-03 | Phase 1 | Pending |
+| VOICE-03 | Phase 1 | Complete |
 | VOICE-04 | Phase 1 | Complete |
 | VOICE-05 | Phase 1 | Complete |
-| VOICE-06 | Phase 1 | Pending |
+| VOICE-06 | Phase 1 | Complete |
 | VOICE-07 | Phase 1 | Complete |
 | TEL-01 | Phase 2 | Pending |
 | TEL-02 | Phase 2 | Pending |
