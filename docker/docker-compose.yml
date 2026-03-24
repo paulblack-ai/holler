@@ -1,0 +1,33 @@
+services:
+  freeswitch:
+    build:
+      context: ./freeswitch
+      args:
+        SIGNALWIRE_TOKEN: ${SIGNALWIRE_TOKEN}
+    network_mode: "host"
+    volumes:
+      - ../config/freeswitch:/etc/freeswitch
+      - freeswitch-logs:/var/log/freeswitch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  freeswitch-logs:
+  redis-data:
