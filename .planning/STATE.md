@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-24T17:02:27.825Z"
-last_activity: 2026-03-24 — Roadmap created, research complete
+status: Ready to execute
+stopped_at: Completed 01-freeswitch-voice-pipeline/01-01-PLAN.md
+last_updated: "2026-03-24T17:34:06.651Z"
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 5
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** An AI agent can make a phone call from locally-hosted infrastructure with a single tool invocation — no vendor accounts, no API keys, no human in the loop.
-**Current focus:** Phase 1 — FreeSWITCH + Voice Pipeline
+**Current focus:** Phase 01 — freeswitch-voice-pipeline
 
 ## Current Position
 
-Phase: 1 of 3 (FreeSWITCH + Voice Pipeline)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-24 — Roadmap created, research complete
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 01 (freeswitch-voice-pipeline) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -52,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01-freeswitch-voice-pipeline P01 | 2 | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -65,6 +60,9 @@ Recent decisions affecting current work:
 - Numbers as ephemeral pool (pending confirmation)
 - Python core + C/Rust voice pipeline (pending confirmation)
 - Local-first inference (pending confirmation)
+- [Phase 01-freeswitch-voice-pipeline]: FreeSWITCH uses host network mode in Docker — RTP port range (16384-32768) cannot be published via Docker port mapping
+- [Phase 01-freeswitch-voice-pipeline]: mod_audio_stream from amigniter open-source fork — Apache 2.0 compatible, avoids commercial SignalWire dependency
+- [Phase 01-freeswitch-voice-pipeline]: ESL listens on 0.0.0.0:8021 so Python orchestrator on host can connect to FreeSWITCH inside Docker
 
 ### Pending Todos
 
@@ -78,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T17:02:27.816Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-freeswitch-voice-pipeline/01-CONTEXT.md
+Last session: 2026-03-24T17:34:06.639Z
+Stopped at: Completed 01-freeswitch-voice-pipeline/01-01-PLAN.md
+Resume file: None

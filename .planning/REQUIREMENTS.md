@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Call Management
 
 - [ ] **CALL-01**: Agent can initiate an outbound voice call to a PSTN number via FreeSWITCH ESL
-- [ ] **CALL-02**: FreeSWITCH softswitch routes SIP calls to/from a configured SIP trunk
+- [x] **CALL-02**: FreeSWITCH softswitch routes SIP calls to/from a configured SIP trunk
 - [ ] **CALL-03**: Agent can answer and route an inbound call to an agent session
 - [ ] **CALL-04**: Call recording captures audio and stores as retrievable file (WAV/MP3)
 - [ ] **CALL-05**: Post-call transcript is generated and persisted alongside recording
@@ -106,7 +106,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CALL-01 | Phase 1 | Pending |
-| CALL-02 | Phase 1 | Pending |
+| CALL-02 | Phase 1 | Complete |
 | CALL-03 | Phase 1 | Pending |
 | CALL-04 | Phase 2 | Pending |
 | CALL-05 | Phase 2 | Pending |

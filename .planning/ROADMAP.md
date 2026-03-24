@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 5 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project skeleton, Docker Compose (FreeSWITCH + Redis), FreeSWITCH configuration
+- [x] 01-01-PLAN.md — Project skeleton, Docker Compose (FreeSWITCH + Redis), FreeSWITCH configuration
 - [ ] 01-02-PLAN.md — Voice pipeline components: STT, TTS, VAD, audio resampler
 - [ ] 01-03-PLAN.md — FreeSWITCH ESL call control: originate, answer, hangup, event routing
 - [ ] 01-04-PLAN.md — Audio bridge WebSocket server, LLM client, streaming pipeline coordinator
@@ -70,6 +70,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. FreeSWITCH + Voice Pipeline | 0/5 | Planning complete | - |
+| 1. FreeSWITCH + Voice Pipeline | 1/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 0/TBD | Not started | - |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |
