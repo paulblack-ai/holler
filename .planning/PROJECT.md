@@ -12,14 +12,14 @@ An AI agent can make a phone call from locally-hosted infrastructure with a sing
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ FreeSWITCH softswitch handles SIP call routing — Phase 1
+- ✓ SIP trunk integration for PSTN connectivity — Phase 1
+- ✓ Voice pipeline runs fully local (STT + TTS) with streaming architecture — Phase 1 (latency pending live verification)
 
 ### Active
 
 - [ ] Agent can make an outbound voice call via tool invocation
-- [ ] Voice pipeline runs fully local (STT + TTS) with sub-800ms round-trip latency
-- [ ] FreeSWITCH softswitch handles SIP call routing
-- [ ] SIP trunk integration for PSTN connectivity
+- [ ] Number pool management (checkout/release of DIDs per interaction)
 - [ ] Number pool management (checkout/release of DIDs per interaction)
 - [ ] Session state tracks conversation context across a call lifecycle
 - [ ] Jurisdiction router dispatches calls through per-country compliance gateways
@@ -91,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after initialization*
+*Last updated: 2026-03-24 after Phase 1 completion*
