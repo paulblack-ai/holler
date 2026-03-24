@@ -55,7 +55,7 @@ Plans:
 - [x] 02-01-PLAN.md — Foundational types (ComplianceModule ABC, TelecomSession), NumberPool, config extensions
 - [x] 02-02-PLAN.md — Data layer: ConsentDB (append-only), DNCList, AuditLog (JSONL + SQLite)
 - [ ] 02-03-PLAN.md — ComplianceGateway (mandatory pre-originate check), JurisdictionRouter, country template
-- [ ] 02-04-PLAN.md — US compliance module: TCPA time-of-day, DNC check, consent verification
+- [x] 02-04-PLAN.md — US compliance module: TCPA time-of-day, DNC check, consent verification
 - [ ] 02-05-PLAN.md — Call recording, post-call transcription, opt-out capture, main.py integration
 
 ### Phase 3: SMS + Agent Interface + CLI
@@ -78,5 +78,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
-| 2. Telecom Abstraction + Compliance | 1/5 | In Progress|  |
+| 2. Telecom Abstraction + Compliance | 3/5 | In Progress|  |
 | 3. SMS + Agent Interface + CLI | 0/TBD | Not started | - |

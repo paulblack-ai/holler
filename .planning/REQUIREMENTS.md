@@ -30,17 +30,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **TEL-01**: Number pool manager checks out a DID per session and releases it on call end
 - [x] **TEL-02**: Session state tracks conversation context, turn history, and tool-call state for the call lifetime
-- [ ] **TEL-03**: Jurisdiction router maps E.164 destination prefix to the correct country compliance module
+- [x] **TEL-03**: Jurisdiction router maps E.164 destination prefix to the correct country compliance module
 
 ### Compliance
 
-- [ ] **COMP-01**: Compliance gateway is mandatory in the outbound call path — no bypass route exists
-- [ ] **COMP-02**: US module enforces TCPA: prior consent verification, caller identification, time-of-day restrictions (8am-9pm recipient local time)
+- [x] **COMP-01**: Compliance gateway is mandatory in the outbound call path — no bypass route exists
+- [x] **COMP-02**: US module enforces TCPA: prior consent verification, caller identification, time-of-day restrictions (8am-9pm recipient local time)
 - [x] **COMP-03**: US module performs DNC (Do Not Call) list check before call connects
 - [ ] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
 - [x] **COMP-05**: Audit log records every compliance check with timestamp, result, and call context
 - [x] **COMP-06**: Country module plugin interface allows adding new jurisdictions without modifying core
-- [ ] **COMP-07**: Country module template (`_template/`) scaffolds a new jurisdiction with documented contract
+- [x] **COMP-07**: Country module template (`_template/`) scaffolds a new jurisdiction with documented contract
 
 ### SMS
 
@@ -120,14 +120,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VOICE-07 | Phase 1 | Complete |
 | TEL-01 | Phase 2 | Complete |
 | TEL-02 | Phase 2 | Complete |
-| TEL-03 | Phase 2 | Pending |
-| COMP-01 | Phase 2 | Pending |
-| COMP-02 | Phase 2 | Pending |
+| TEL-03 | Phase 2 | Complete |
+| COMP-01 | Phase 2 | Complete |
+| COMP-02 | Phase 2 | Complete |
 | COMP-03 | Phase 2 | Complete |
 | COMP-04 | Phase 2 | Pending |
 | COMP-05 | Phase 2 | Complete |
 | COMP-06 | Phase 2 | Complete |
-| COMP-07 | Phase 2 | Pending |
+| COMP-07 | Phase 2 | Complete |
 | SMS-01 | Phase 3 | Pending |
 | SMS-02 | Phase 3 | Pending |
 | SMS-03 | Phase 3 | Pending |

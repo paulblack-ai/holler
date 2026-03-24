@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-24T22:59:39.200Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-03-24T23:13:00.826Z"
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 02 (telecom-abstraction-compliance) — EXECUTING
-Plan: 3 of 5
+Plan: 5 of 5
 
 ## Performance Metrics
 
@@ -53,6 +53,8 @@ Plan: 3 of 5
 | Phase 01 P05 | 4 | 2 tasks | 6 files |
 | Phase 02-telecom-abstraction-compliance P02 | 3 | 3 tasks | 7 files |
 | Phase 02-telecom-abstraction-compliance P01 | 5min | 3 tasks | 10 files |
+| Phase 02-telecom-abstraction-compliance P03 | 15min | 3 tasks | 6 files |
+| Phase 02-telecom-abstraction-compliance P04 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -84,6 +86,11 @@ Recent decisions affecting current work:
 - [Phase 02-telecom-abstraction-compliance]: ComplianceModule ABC defined with single abstract check_outbound() method — country modules implement only this one contract
 - [Phase 02-telecom-abstraction-compliance]: TelecomSession uses composition not inheritance — voice_session field is Optional[VoiceSession], set after call answers
 - [Phase 02-telecom-abstraction-compliance]: NumberPool uses TYPE_CHECKING guard for redis import — avoids hard import error when redis-py not installed
+- [Phase 02-telecom-abstraction-compliance]: ComplianceGateway in gateway.py alongside ABC — structural guarantee explicit in single file
+- [Phase 02-telecom-abstraction-compliance]: JurisdictionRouter longest-prefix-match via sorted(keys, key=len, reverse=True) — simple, correct for <50 country modules
+- [Phase 02-telecom-abstraction-compliance]: TemplateComplianceModule denies all calls (fail-closed default) — prevents accidentally allowing non-compliant calls from unimplemented template
+- [Phase 02-telecom-abstraction-compliance]: check_time_of_day() accepts optional now parameter for deterministic testing without mocking
+- [Phase 02-telecom-abstraction-compliance]: US compliance check order: DNC -> time-of-day -> consent (cheapest-first I/O)
 
 ### Pending Todos
 
@@ -97,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T22:59:39.189Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-24T23:13:00.816Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
