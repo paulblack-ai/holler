@@ -132,9 +132,10 @@ RUN mv modules.conf modules.conf.orig && \
 
 # Configure — disable libvpx (mod_av not in modules.conf but configure
 # still tries to build its libs). --enable-fhs for standard paths.
+# --enable-fhs appends freeswitch/ to sysconfdir, so use /etc not /etc/freeswitch
 RUN ./configure \
         --prefix=/usr \
-        --sysconfdir=/etc/freeswitch \
+        --sysconfdir=/etc \
         --localstatedir=/var \
         --enable-fhs \
         --disable-libvpx
