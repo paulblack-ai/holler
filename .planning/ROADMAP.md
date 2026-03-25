@@ -80,15 +80,19 @@ Plans:
 **UI hint**: no
 
 ### Phase 4: CLI + Docker Onboarding Fixes
-**Goal**: The four-command onboarding flow (`pip install holler` → `holler init` → `holler trunk add` → `holler call`) completes end-to-end without error — Docker services start from any working directory and trunk credentials propagate to FreeSWITCH
+**Goal**: The four-command onboarding flow (`pip install holler` -> `holler init` -> `holler trunk add` -> `holler call`) completes end-to-end without error -- Docker services start from any working directory and trunk credentials propagate to FreeSWITCH
 **Depends on**: Phase 3
 **Requirements**: AGENT-03, AGENT-04, AGENT-06
 **Gap Closure**: Closes gaps from v1.0 audit
 **Success Criteria** (what must be TRUE):
   1. `holler init` runs `docker compose -f docker/docker-compose.yml up -d` regardless of the user's working directory
-  2. `holler trunk add --host sip.example.com --user alice --pass secret` writes env vars that FreeSWITCH reads — the SIP gateway in `external.xml` receives the correct host, username, and password
+  2. `holler trunk add --host sip.example.com --user alice --pass secret` writes env vars that FreeSWITCH reads -- the SIP gateway in `external.xml` receives the correct host, username, and password
   3. The full four-command sequence on a clean machine results in a running FreeSWITCH+Redis stack with configured SIP trunk credentials
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 04-01-PLAN.md — Fix docker compose path resolution, align FreeSWITCH env var names, wire env injection
+
 **UI hint**: no
 
 ### Phase 5: SMS Inbound + STT Opt-Out Wiring
@@ -105,12 +109,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
 | 3. SMS + Agent Interface + CLI | 4/4 | Complete   | 2026-03-25 |
-| 4. CLI + Docker Onboarding Fixes | 0/TBD | Not started | - |
+| 4. CLI + Docker Onboarding Fixes | 0/1 | Not started | - |
 | 5. SMS Inbound + STT Opt-Out Wiring | 0/TBD | Not started | - |
