@@ -1,9 +1,9 @@
 <profile name="external">
   <gateways>
     <gateway name="sip_trunk">
-      <param name="username" value="$${TRUNK_USER}"/>
-      <param name="password" value="$${TRUNK_PASSWORD}"/>
-      <param name="proxy" value="$${TRUNK_HOST}"/>
+      <param name="username" value="$${HOLLER_TRUNK_USER}"/>
+      <param name="password" value="$${HOLLER_TRUNK_PASS}"/>
+      <param name="proxy" value="$${HOLLER_TRUNK_HOST}"/>
       <param name="register" value="true"/>
       <param name="caller-id-in-from" value="false"/>
       <param name="codec-prefs" value="PCMU,PCMA"/>

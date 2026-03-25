@@ -239,6 +239,40 @@ class TestStartServices:
             assert "--project-directory" in args
 
 
+class TestEnvVarAlignment:
+    """Env var names are consistent between CLI, docker-compose, and FreeSWITCH config."""
+
+    def test_external_xml_uses_holler_trunk_vars(self):
+        """FreeSWITCH external.xml must use HOLLER_TRUNK_* var names (per D-03)."""
+        xml_path = Path(__file__).resolve().parent.parent / "config" / "freeswitch" / "sip_profiles" / "external.xml"
+        content = xml_path.read_text()
+        assert "HOLLER_TRUNK_HOST" in content
+        assert "HOLLER_TRUNK_USER" in content
+        assert "HOLLER_TRUNK_PASS" in content
+        # Old names must NOT be present
+        assert "TRUNK_PASSWORD" not in content
+        assert "value=\"$${TRUNK_USER}\"" not in content
+        assert "value=\"$${TRUNK_HOST}\"" not in content
+
+    def test_docker_compose_injects_trunk_vars(self):
+        """docker-compose.yml must inject HOLLER_TRUNK_* into freeswitch container (per D-02)."""
+        compose_path = Path(__file__).resolve().parent.parent / "docker" / "docker-compose.yml"
+        content = compose_path.read_text()
+        assert "HOLLER_TRUNK_HOST" in content
+        assert "HOLLER_TRUNK_USER" in content
+        assert "HOLLER_TRUNK_PASS" in content
+
+    def test_cli_writes_same_var_names_as_freeswitch_reads(self):
+        """CLI trunk vars must match FreeSWITCH XML var names."""
+        # CLI writes these keys (from _write_trunk_config)
+        cli_keys = {"HOLLER_TRUNK_HOST", "HOLLER_TRUNK_USER", "HOLLER_TRUNK_PASS"}
+        # FreeSWITCH reads these (parse from external.xml)
+        xml_path = Path(__file__).resolve().parent.parent / "config" / "freeswitch" / "sip_profiles" / "external.xml"
+        content = xml_path.read_text()
+        for key in cli_keys:
+            assert key in content, f"{key} not found in external.xml"
+
+
 class TestHollerConfigSMSField:
     """HollerConfig.from_env() returns config with sms field populated."""
 

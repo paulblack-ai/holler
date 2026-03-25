@@ -5,6 +5,10 @@ services:
       args:
         SIGNALWIRE_TOKEN: ${SIGNALWIRE_TOKEN}
     network_mode: "host"
+    environment:
+      - HOLLER_TRUNK_HOST=${HOLLER_TRUNK_HOST:-}
+      - HOLLER_TRUNK_USER=${HOLLER_TRUNK_USER:-}
+      - HOLLER_TRUNK_PASS=${HOLLER_TRUNK_PASS:-}
     volumes:
       - ../config/freeswitch:/etc/freeswitch
       - freeswitch-logs:/var/log/freeswitch
