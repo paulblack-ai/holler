@@ -52,10 +52,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **AGENT-01**: Tool-use protocol exposes `call`, `sms`, `hangup`, `transfer` actions as LLM tool invocations
 - [x] **AGENT-02**: Agent interface is LLM-agnostic — works with any model that supports tool/function calling
-- [ ] **AGENT-03**: CLI provides `holler init` to download models and start local services
-- [ ] **AGENT-04**: CLI provides `holler trunk add` to configure SIP trunk credentials
-- [ ] **AGENT-05**: CLI provides `holler call` to make a call with an agent prompt in one command
-- [ ] **AGENT-06**: Four-command onboarding: install → init → trunk → call
+- [x] **AGENT-03**: CLI provides `holler init` to download models and start local services
+- [x] **AGENT-04**: CLI provides `holler trunk add` to configure SIP trunk credentials
+- [x] **AGENT-05**: CLI provides `holler call` to make a call with an agent prompt in one command
+- [x] **AGENT-06**: Four-command onboarding: install → init → trunk → call
 
 ## v2 Requirements
 
@@ -133,10 +133,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SMS-03 | Phase 3 | Complete |
 | AGENT-01 | Phase 3 | Complete |
 | AGENT-02 | Phase 3 | Complete |
-| AGENT-03 | Phase 3 | Pending |
-| AGENT-04 | Phase 3 | Pending |
-| AGENT-05 | Phase 3 | Pending |
-| AGENT-06 | Phase 3 | Pending |
+| AGENT-03 | Phase 3 | Complete |
+| AGENT-04 | Phase 3 | Complete |
+| AGENT-05 | Phase 3 | Complete |
+| AGENT-06 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 32 total

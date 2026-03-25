@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-03-25T00:18:46.903Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-03-25T00:25:16.691Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -59,6 +59,7 @@ Plan: 4 of 4
 | Phase 03-sms-agent-interface-cli P02 | 3min | 1 tasks | 5 files |
 | Phase 03-sms-agent-interface-cli P01 | 15min | 2 tasks | 6 files |
 | Phase 03-sms-agent-interface-cli P03 | 5min | 2 tasks | 3 files |
+| Phase 03-sms-agent-interface-cli P04 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,10 @@ Recent decisions affecting current work:
 - [Phase 03-sms-agent-interface-cli]: tool_calls_accumulator dict keyed by chunk index — reassembles fragmented tool_calls from streaming delta chunks
 - [Phase 03-sms-agent-interface-cli]: TTS queue flushed via None sentinel before tool execution — prevents pipeline deadlock (Pitfall 2)
 - [Phase 03-sms-agent-interface-cli]: extra_history scoped to turn — tool results not added to session.history until turn completes (clean rollback semantics)
+- [Phase 03-sms-agent-interface-cli]: load_dotenv override=False: .holler.env file values never override shell env vars -- explicit env always wins
+- [Phase 03-sms-agent-interface-cli]: SMS client optional init: SMSClient object always created but initialize() called only if password is non-empty -- safe no-op when SMSC absent
+- [Phase 03-sms-agent-interface-cli]: ToolExecutor created before VoicePipeline: executor needs esl+sms+compliance+pool; pipeline receives executor as constructor arg
+- [Phase 03-sms-agent-interface-cli]: Click --pass alias: trunk command exposes both --password and --pass via Click option name list per D-15
 
 ### Pending Todos
 
@@ -119,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T00:18:46.891Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-03-25T00:25:16.680Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
