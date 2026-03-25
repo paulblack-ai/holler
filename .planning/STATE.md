@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: v1.0 milestone complete
-stopped_at: Completed 05-sms-inbound-stt-optout-wiring/05-01-PLAN.md
-last_updated: "2026-03-25T01:45:59.603Z"
+stopped_at: Completed quick/260324-ubt-fix-holler-init-kokoro-onnx-model-downlo/260324-ubt-PLAN.md
+last_updated: "2026-03-25T03:00:45.267Z"
 progress:
   total_phases: 5
   completed_phases: 5
@@ -120,6 +120,8 @@ Recent decisions affecting current work:
 - [Phase 05-sms-inbound-stt-optout-wiring]: Inline import of check_optout_keywords inside _respond() to avoid circular import (telecom.__init__ -> telecom.session -> voice.pipeline)
 - [Phase 05-sms-inbound-stt-optout-wiring]: telecom_sessions dict moved before pipeline/SMS init so _handle_stt_optout closure captures it at definition time
 - [Phase 05-sms-inbound-stt-optout-wiring]: VoicePipeline.__init__ backward compatible: on_optout/opt_out_keywords params default to None/[] respectively
+- [Phase quick]: HOLLER_COMPOSE_FILE env var override in _start_services() — env var takes priority over __file__-based and CWD resolution
+- [Phase quick]: CWD fallback in _start_services() — Path.cwd()/docker/ checked when __file__-based path has no docker-compose.yml; handles pip install scenario
 
 ### Pending Todos
 
@@ -136,9 +138,10 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260324-r7i | Align README, create missing docs (CONTRIBUTING.md, LICENSE) | 2026-03-25 | 9b6fa15 | [260324-r7i-align-the-readme-missing-docs-quick-pass](./quick/260324-r7i-align-the-readme-missing-docs-quick-pass/) |
+| 260324-ubt | Fix holler init: correct Kokoro ONNX HF repo (fastrtc/kokoro-onnx) + CWD fallback for docker-compose.yml | 2026-03-25 | 60c2072 | [260324-ubt-fix-holler-init-kokoro-onnx-model-downlo](./quick/260324-ubt-fix-holler-init-kokoro-onnx-model-downlo/) |
 
 ## Session Continuity
 
-Last session: 2026-03-25T01:29:55.331Z
-Stopped at: Completed 05-sms-inbound-stt-optout-wiring/05-01-PLAN.md
+Last session: 2026-03-25T03:00:35.361Z
+Stopped at: Completed quick/260324-ubt-fix-holler-init-kokoro-onnx-model-downlo/260324-ubt-PLAN.md
 Resume file: None
