@@ -22,17 +22,15 @@ An AI agent can make a phone call from locally-hosted infrastructure with a sing
 - ✓ Country module plugin interface with scaffold template — Phase 2
 - ✓ Recording and live transcription pipeline — Phase 2
 - ✓ Consent/opt-out state machine enforced in the call path — Phase 2
+- ✓ Agent can make an outbound voice call via tool invocation — Phase 3
+- ✓ Agent can send/receive SMS via SMPP — Phase 3
+- ✓ CLI onboarding: `pip install holler`, `holler init`, `holler call` — four commands to first call — Phase 3
+- ✓ Tool-use protocol exposes call/sms/hangup/transfer as LLM tool invocations — Phase 3
+- ✓ LLM-agnostic agent interface (OpenAI, Anthropic, local Ollama) — Phase 3
 
 ### Active
 
-- [ ] Agent can make an outbound voice call via tool invocation
-- [ ] US compliance gateway enforces TCPA, STIR/SHAKEN, time-of-day, DNC
-- [ ] Country module plugin interface with scaffold template
-- [ ] Agent can send/receive SMS via SMPP or GSM modem
 - [ ] Agent-to-agent direct communication via WebRTC (no PSTN)
-- [ ] CLI onboarding: `pip install holler`, `holler init`, `holler call` — four commands to first call
-- [ ] Recording and live transcription pipeline
-- [ ] Consent/opt-out state machine enforced in the call path
 
 ### Out of Scope
 
@@ -94,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after Phase 2 completion*
+*Last updated: 2026-03-25 after Phase 3 completion*
