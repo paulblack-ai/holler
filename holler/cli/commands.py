@@ -134,8 +134,8 @@ def _download_models():
     try:
         click.echo("    Kokoro ONNX model...", nl=False)
         from huggingface_hub import hf_hub_download
-        hf_hub_download("hexgrad/Kokoro-82M", "kokoro-v1.0.onnx")
-        hf_hub_download("hexgrad/Kokoro-82M", "voices-v1.0.bin")
+        hf_hub_download("fastrtc/kokoro-onnx", "kokoro-v1.0.onnx")
+        hf_hub_download("fastrtc/kokoro-onnx", "voices-v1.0.bin")
         click.secho(" done", fg="green")
     except Exception as e:
         click.secho(f" failed: {e}", fg="red")

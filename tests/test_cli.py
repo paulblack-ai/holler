@@ -205,6 +205,80 @@ class TestWriteTrunkConfig:
             os.chdir(orig_cwd)
 
 
+class TestDownloadModels:
+    """_download_models() uses correct HuggingFace repo for Kokoro ONNX."""
+
+    def _make_import_mock(self, mock_hf_download):
+        """Return a side_effect function for __import__ that intercepts huggingface_hub and faster_whisper."""
+        real_import = __builtins__["__import__"] if isinstance(__builtins__, dict) else __import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "huggingface_hub":
+                m = mock.MagicMock()
+                m.hf_hub_download = mock_hf_download
+                return m
+            if name == "faster_whisper":
+                m = mock.MagicMock()
+                return m
+            return real_import(name, *args, **kwargs)
+
+        return fake_import
+
+    def test_download_models_uses_fastrtc_kokoro_onnx_repo(self):
+        """hf_hub_download must be called with 'fastrtc/kokoro-onnx', not 'hexgrad/Kokoro-82M'."""
+        from holler.cli.commands import _download_models
+        mock_hf = mock.MagicMock()
+        with mock.patch("holler.cli.commands.click.echo"), \
+             mock.patch("holler.cli.commands.click.secho"), \
+             mock.patch("builtins.__import__", side_effect=self._make_import_mock(mock_hf)):
+            _download_models()
+        calls = mock_hf.call_args_list
+        repos = [call[0][0] for call in calls]
+        assert "fastrtc/kokoro-onnx" in repos, (
+            f"Expected 'fastrtc/kokoro-onnx' repo but got: {repos}"
+        )
+        assert "hexgrad/Kokoro-82M" not in repos, (
+            f"Old wrong repo 'hexgrad/Kokoro-82M' should not be used, but found in: {repos}"
+        )
+
+    def test_download_models_downloads_both_kokoro_files(self):
+        """Both kokoro-v1.0.onnx and voices-v1.0.bin must be downloaded from fastrtc/kokoro-onnx."""
+        from holler.cli.commands import _download_models
+        mock_hf = mock.MagicMock()
+        with mock.patch("holler.cli.commands.click.echo"), \
+             mock.patch("holler.cli.commands.click.secho"), \
+             mock.patch("builtins.__import__", side_effect=self._make_import_mock(mock_hf)):
+            _download_models()
+        # Collect (repo, filename) pairs from Kokoro calls
+        kokoro_calls = [
+            (call[0][0], call[0][1])
+            for call in mock_hf.call_args_list
+            if len(call[0]) >= 2
+        ]
+        assert ("fastrtc/kokoro-onnx", "kokoro-v1.0.onnx") in kokoro_calls, (
+            f"Expected (fastrtc/kokoro-onnx, kokoro-v1.0.onnx) in calls: {kokoro_calls}"
+        )
+        assert ("fastrtc/kokoro-onnx", "voices-v1.0.bin") in kokoro_calls, (
+            f"Expected (fastrtc/kokoro-onnx, voices-v1.0.bin) in calls: {kokoro_calls}"
+        )
+
+    def test_download_models_handles_failure_gracefully(self):
+        """If hf_hub_download raises, _download_models prints error and does not crash."""
+        from holler.cli.commands import _download_models
+        mock_hf_fail = mock.MagicMock(side_effect=Exception("Network error"))
+        with mock.patch("holler.cli.commands.click.echo"), \
+             mock.patch("holler.cli.commands.click.secho") as mock_secho, \
+             mock.patch("builtins.__import__", side_effect=self._make_import_mock(mock_hf_fail)):
+            # Must not raise
+            _download_models()
+        # Should have printed an error via click.secho with fg="red"
+        red_calls = [
+            c for c in mock_secho.call_args_list
+            if c[1].get("fg") == "red" or (len(c[0]) > 0 and "failed" in str(c[0][0]))
+        ]
+        assert len(red_calls) > 0, "Expected at least one error message printed on failure"
+
+
 class TestStartServices:
     """_start_services() resolves compose file path from package location."""
 
