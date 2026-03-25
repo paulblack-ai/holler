@@ -7,10 +7,13 @@ Agent behavior defined via system message (D-12). Phase 1 uses a simple
 conversational responder — tool-use protocol comes in Phase 3.
 """
 import asyncio
+import json
 from dataclasses import dataclass, field
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, List, Optional, Union
 
 import structlog
+
+from holler.core.agent.tools import ToolCallSentinel
 
 logger = structlog.get_logger()
 
@@ -52,15 +55,26 @@ class LLMClient:
         self,
         transcript: str,
         history: Optional[List[dict]] = None,
-    ) -> AsyncGenerator[str, None]:
+        tools: Optional[List[dict]] = None,
+    ) -> AsyncGenerator[Union[str, ToolCallSentinel], None]:
         """Stream LLM response tokens given a user transcript.
 
+        When tools are provided and the LLM invokes a tool instead of speaking,
+        a ToolCallSentinel is yielded as the last item. The pipeline coordinator
+        intercepts it and routes execution through ToolExecutor.
+
+        When no tools are provided (or LLM responds with text), only str tokens
+        are yielded — fully backward compatible.
+
         Args:
-            transcript: The user's speech-to-text transcript
-            history: Prior conversation turns [{"role": "user"|"assistant", "content": "..."}]
+            transcript: The user's speech-to-text transcript.
+            history: Prior conversation turns [{"role": "user"|"assistant", "content": "..."}].
+            tools: Optional list of tool definitions in OpenAI function calling format.
+                   When provided, enables tool-calling mode. Pass None for text-only mode.
 
         Yields:
-            Individual tokens (str) as they arrive from the LLM
+            str tokens as they arrive, or a single ToolCallSentinel if the LLM
+            invokes a tool instead of generating text.
         """
         if self._client is None:
             raise RuntimeError("LLMClient not initialized. Call initialize() first.")
@@ -72,24 +86,74 @@ class LLMClient:
         )
 
         token_count = 0
+        tool_calls_accumulator: dict = {}  # index -> {"id": str, "name": str, "arguments": str}
+
         try:
-            stream = await self._client.chat.completions.create(
+            create_kwargs = dict(
                 model=self.config.model,
                 messages=messages,
                 stream=True,
                 max_tokens=self.config.max_tokens,
                 temperature=self.config.temperature,
             )
+            if tools:
+                create_kwargs["tools"] = tools
+                create_kwargs["tool_choice"] = "auto"
+
+            stream = await self._client.chat.completions.create(**create_kwargs)
+
             async for chunk in stream:
-                content = chunk.choices[0].delta.content
-                if content is not None:
+                delta = chunk.choices[0].delta
+
+                # Text token path
+                if delta.content is not None:
                     token_count += 1
-                    yield content
+                    yield delta.content
+
+                # Tool-call accumulation path
+                if hasattr(delta, "tool_calls") and delta.tool_calls:
+                    for tc in delta.tool_calls:
+                        idx = tc.index
+                        if idx not in tool_calls_accumulator:
+                            tool_calls_accumulator[idx] = {
+                                "id": tc.id or "",
+                                "name": tc.function.name or "" if tc.function else "",
+                                "arguments": "",
+                            }
+                        if tc.id:
+                            tool_calls_accumulator[idx]["id"] = tc.id
+                        if tc.function:
+                            if tc.function.name:
+                                tool_calls_accumulator[idx]["name"] = tc.function.name
+                            if tc.function.arguments:
+                                tool_calls_accumulator[idx]["arguments"] += tc.function.arguments
+
+            # Yield sentinel if any tool calls were accumulated
+            if tool_calls_accumulator:
+                yield ToolCallSentinel(list(tool_calls_accumulator.values()))
+
         except Exception as e:
             logger.error("llm.stream_error", error=str(e))
             raise
         finally:
             logger.info("llm.response_complete", tokens=token_count)
+
+    def build_tool_result_entry(self, tool_call_id: str, result: dict) -> dict:
+        """Create a tool result message for conversation history.
+
+        Args:
+            tool_call_id: The tool call ID from the LLM's tool invocation.
+            result: The dict result returned by ToolExecutor.execute().
+
+        Returns:
+            History entry in OpenAI tool result format:
+            {"role": "tool", "tool_call_id": str, "content": str (JSON)}
+        """
+        return {
+            "role": "tool",
+            "tool_call_id": tool_call_id,
+            "content": json.dumps(result),
+        }
 
     def build_history_entry(self, role: str, content: str) -> dict:
         """Create a history entry for conversation tracking."""
