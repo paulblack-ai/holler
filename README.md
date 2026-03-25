@@ -10,24 +10,52 @@ Holler gives AI agents a mouth and an ear. It's a self-hosted telecom stack that
 
 The phone network was built for humans. Holler is a bridge from that infrastructure into whatever comes next.
 
+## System requirements
+
+| Component | Minimum | Recommended |
+|---|---|---|
+| OS | macOS 13+, Ubuntu 22.04+, any Linux with Docker | Same |
+| CPU | 4 cores | 8+ cores |
+| RAM | 8 GB | 16+ GB |
+| GPU | None (CPU inference works) | Any GPU with 8+ GB VRAM, or Apple Silicon with 16+ GB unified memory |
+| Disk | 10 GB (models + Docker images) | 20 GB |
+| Docker | Docker Desktop or Docker Engine + Compose | Same |
+
+Apple Silicon (M1/M2/M3/M4) runs the full stack well on CPU. GPU acceleration via Metal is supported by faster-whisper and Kokoro.
+
 ## Prerequisites
 
-- Python 3.11+
-- Docker (for FreeSWITCH + Redis via Docker Compose)
-- A SIP trunk account (the single external dependency — any commodity SIP provider)
-- An OpenAI-compatible LLM endpoint (default: Ollama on localhost)
+- **Python 3.11+**
+- **Docker** — Docker Desktop (macOS/Windows) or Docker Engine + Compose (Linux). FreeSWITCH and Redis run as containers.
+- **A SIP trunk account** — the single external dependency. Any commodity SIP provider ([VoIP.ms](https://voip.ms), [Bitcall](https://bitcall.io), [Telnyx](https://telnyx.com), etc). ~$15 prepaid gets you started.
+- **An OpenAI-compatible LLM endpoint** — default: [Ollama](https://ollama.com) on localhost (free, local). Also works with OpenAI, Anthropic (via adapter), vLLM, or any OpenAI-compatible API.
+
+No vendor accounts required for the core stack. No SignalWire, no Twilio, no cloud APIs. Everything builds from public sources.
 
 ## Quick start
 
 ```bash
+# Clone and install
 git clone https://github.com/holler-ai/holler && cd holler
-pip install -e .
+uv venv && source .venv/bin/activate    # or: python3 -m venv .venv && source .venv/bin/activate
+uv pip install -e .                      # or: pip install -e .
+
+# Pull a local LLM
+ollama pull llama3.2
+
+# Initialize (downloads voice models, starts FreeSWITCH + Redis)
 holler init
-holler trunk --host sip.example.com --user xxx --pass xxx
+
+# Configure your SIP trunk
+holler trunk --host sip.voip.ms --user YOUR_USER --pass YOUR_PASS
+
+# Make your first call
 holler call +14155551234 --agent "Say hello and ask how their day is going."
 ```
 
-Four commands from clone to first call. No dashboard. No account creation. No OAuth flow.
+Five minutes from clone to first call. No dashboard. No account creation. No OAuth flow.
+
+**First build note:** `holler init` builds FreeSWITCH from source on first run (~15-25 min). Subsequent runs use the cached Docker image and start in seconds.
 
 ## How it works
 

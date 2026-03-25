@@ -253,9 +253,21 @@ def _start_services():
             )
             return
 
+    # Detect docker compose command: plugin ("docker compose") or standalone ("docker-compose")
+    compose_cmd = ["docker", "compose"]
+    try:
+        probe = subprocess.run(
+            ["docker", "compose", "version"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if probe.returncode != 0:
+            compose_cmd = ["docker-compose"]
+    except FileNotFoundError:
+        compose_cmd = ["docker-compose"]
+
     try:
         result = subprocess.run(
-            ["docker", "compose", "-f", str(compose_file),
+            [*compose_cmd, "-f", str(compose_file),
              "--project-directory", str(compose_file.parent),
              "up", "-d"],
             capture_output=True, text=True, timeout=120
