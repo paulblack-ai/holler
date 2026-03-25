@@ -122,6 +122,12 @@ None yet.
 - [Phase 2]: Research flag on compliance gateway — STIR/SHAKEN cert integration and 2025 FCC opt-out expansion warrant research before coding
 - [Phase 1]: Research flag on voice pipeline — mod_audio_stream WebSocket integration and faster-whisper streaming config warrant research before coding
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260324-r7i | Align README, create missing docs (CONTRIBUTING.md, LICENSE) | 2026-03-25 | 9b6fa15 | [260324-r7i-align-the-readme-missing-docs-quick-pass](./quick/260324-r7i-align-the-readme-missing-docs-quick-pass/) |
+
 ## Session Continuity
 
 Last session: 2026-03-25T00:41:55.689Z
