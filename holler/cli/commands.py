@@ -7,6 +7,8 @@ import os
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import click
@@ -46,6 +48,9 @@ def init():
 
     # 1. Check GPU availability
     _check_gpu()
+
+    # 1.5 Check LLM endpoint
+    _check_llm_endpoint()
 
     # 2. Download models
     _download_models()
@@ -115,6 +120,34 @@ def _check_gpu():
             click.echo("  No GPU detected -- using CPU (slower, limited concurrent calls)")
     except ImportError:
         click.echo("  No GPU detected -- using CPU (slower, limited concurrent calls)")
+
+
+def _check_llm_endpoint():
+    """Check LLM endpoint reachability and report.
+
+    Reads LLM_BASE_URL from environment (default: http://localhost:11434/v1).
+    Strips the /v1 suffix to get the Ollama root health endpoint.
+    Uses a 3-second timeout so init is not blocked if the endpoint is down.
+    This is a warning only -- init continues regardless of result.
+    """
+    base_url = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1")
+    # Strip /v1 suffix: Ollama health endpoint is at root, not under /v1
+    health_url = base_url.rstrip("/")
+    if health_url.endswith("/v1"):
+        health_url = health_url[:-3]
+
+    try:
+        with urllib.request.urlopen(health_url, timeout=3) as resp:
+            if resp.status == 200:
+                click.secho(f"  LLM endpoint reachable: {health_url}", fg="green")
+            else:
+                click.secho(f"  LLM endpoint returned {resp.status}: {health_url}", fg="yellow")
+                click.secho("  Install Ollama: brew install ollama && ollama serve", fg="yellow")
+                click.secho("  Then pull a model: ollama pull llama3.2", fg="yellow")
+    except urllib.error.URLError:
+        click.secho(f"  No LLM endpoint found at {health_url}", fg="yellow")
+        click.secho("  Install Ollama: brew install ollama && ollama serve", fg="yellow")
+        click.secho("  Then pull a model: ollama pull llama3.2", fg="yellow")
 
 
 def _download_models():

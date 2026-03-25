@@ -15,6 +15,7 @@ from holler.cli.commands import (
     _generate_env_file,
     _write_trunk_config,
     _get_project_root,
+    _check_llm_endpoint,
 )
 
 
@@ -455,3 +456,114 @@ class TestHollerConfigSMSField:
         with mock.patch("dotenv.load_dotenv") as mock_dotenv:
             HollerConfig.from_env()
         mock_dotenv.assert_called_once_with(".holler.env", override=False)
+
+
+class TestLLMHealthCheck:
+    """_check_llm_endpoint() reports LLM reachability during holler init."""
+
+    def test_prints_green_success_when_endpoint_returns_200(self):
+        """Green success message printed when endpoint responds HTTP 200."""
+        import urllib.error
+        mock_response = mock.MagicMock()
+        mock_response.status = 200
+        mock_response.__enter__ = lambda s: s
+        mock_response.__exit__ = mock.MagicMock(return_value=False)
+
+        with mock.patch("urllib.request.urlopen", return_value=mock_response) as mock_urlopen, \
+             mock.patch("holler.cli.commands.click.secho") as mock_secho, \
+             mock.patch("holler.cli.commands.click.echo"):
+            _check_llm_endpoint()
+
+        green_calls = [c for c in mock_secho.call_args_list if c[1].get("fg") == "green"]
+        assert len(green_calls) > 0, "Expected green success message when endpoint returns 200"
+
+    def test_prints_yellow_warning_when_connection_refused(self):
+        """Yellow warning with install instructions when endpoint is unreachable."""
+        import urllib.error
+        with mock.patch("urllib.request.urlopen",
+                        side_effect=urllib.error.URLError("Connection refused")), \
+             mock.patch("holler.cli.commands.click.secho") as mock_secho, \
+             mock.patch("holler.cli.commands.click.echo"):
+            _check_llm_endpoint()
+
+        yellow_calls = [c for c in mock_secho.call_args_list if c[1].get("fg") == "yellow"]
+        assert len(yellow_calls) > 0, "Expected yellow warning when endpoint is unreachable"
+        all_output = " ".join(str(c[0][0]) for c in mock_secho.call_args_list)
+        assert "ollama" in all_output.lower(), "Expected Ollama install instructions in warning"
+
+    def test_prints_yellow_warning_when_non_200_status(self):
+        """Yellow warning printed when endpoint returns non-200 status."""
+        import urllib.error
+        mock_response = mock.MagicMock()
+        mock_response.status = 503
+        mock_response.__enter__ = lambda s: s
+        mock_response.__exit__ = mock.MagicMock(return_value=False)
+
+        with mock.patch("urllib.request.urlopen",
+                        side_effect=urllib.error.HTTPError(
+                            url=None, code=503, msg="Service Unavailable",
+                            hdrs=None, fp=None)), \
+             mock.patch("holler.cli.commands.click.secho") as mock_secho, \
+             mock.patch("holler.cli.commands.click.echo"):
+            _check_llm_endpoint()
+
+        yellow_calls = [c for c in mock_secho.call_args_list if c[1].get("fg") == "yellow"]
+        assert len(yellow_calls) > 0, "Expected yellow warning when endpoint returns non-200"
+
+    def test_respects_llm_base_url_env_var(self):
+        """_check_llm_endpoint() uses LLM_BASE_URL env var, not hardcoded localhost:11434."""
+        import urllib.error
+        custom_url = "http://myserver:8080/v1"
+        with mock.patch.dict(os.environ, {"LLM_BASE_URL": custom_url}), \
+             mock.patch("urllib.request.urlopen",
+                        side_effect=urllib.error.URLError("Connection refused")) as mock_urlopen, \
+             mock.patch("holler.cli.commands.click.secho"), \
+             mock.patch("holler.cli.commands.click.echo"):
+            _check_llm_endpoint()
+
+        # urlopen should have been called with a URL derived from the custom base
+        call_args = mock_urlopen.call_args
+        called_url = str(call_args[0][0]) if call_args[0] else str(call_args[1].get("url", ""))
+        assert "myserver:8080" in called_url, (
+            f"Expected custom URL host in urlopen call, got: {called_url}"
+        )
+
+    def test_uses_short_timeout(self):
+        """urlopen must be called with a 3-second timeout so init is not blocked."""
+        import urllib.error
+        mock_response = mock.MagicMock()
+        mock_response.status = 200
+        mock_response.__enter__ = lambda s: s
+        mock_response.__exit__ = mock.MagicMock(return_value=False)
+
+        with mock.patch("urllib.request.urlopen", return_value=mock_response) as mock_urlopen, \
+             mock.patch("holler.cli.commands.click.secho"), \
+             mock.patch("holler.cli.commands.click.echo"):
+            _check_llm_endpoint()
+
+        call_args = mock_urlopen.call_args
+        # timeout can be positional or keyword
+        if call_args[0] and len(call_args[0]) >= 2:
+            timeout = call_args[0][1]
+        else:
+            timeout = call_args[1].get("timeout")
+        assert timeout == 3, f"Expected 3-second timeout, got: {timeout}"
+
+    def test_init_command_includes_llm_check(self):
+        """init command output includes LLM check messaging."""
+        runner = CliRunner()
+        import urllib.error
+
+        with mock.patch("holler.cli.commands._check_gpu"), \
+             mock.patch("holler.cli.commands._download_models"), \
+             mock.patch("holler.cli.commands._generate_env_file"), \
+             mock.patch("holler.cli.commands._start_services"), \
+             mock.patch("urllib.request.urlopen",
+                        side_effect=urllib.error.URLError("Connection refused")):
+            result = runner.invoke(cli, ["init"])
+
+        assert result.exit_code == 0
+        # Output should mention LLM or Ollama in some form
+        assert "llm" in result.output.lower() or "ollama" in result.output.lower(), (
+            f"Expected LLM check output in init, got: {result.output!r}"
+        )
