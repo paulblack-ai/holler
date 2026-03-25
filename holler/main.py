@@ -1,15 +1,18 @@
 """Holler application entry point.
 
-Boots the full Phase 2 integrated stack:
-1. Load config (HollerConfig.from_env — includes pool, compliance, recording)
+Boots the full Phase 3 integrated stack:
+1. Load config (HollerConfig.from_env -- includes pool, compliance, recording, SMS)
 2. Create Redis client
-3. Initialize voice pipeline (STT + TTS + LLM models)
-4. Initialize data stores (NumberPool, ConsentDB, DNCList, AuditLog)
-5. Set up compliance (USComplianceModule, JurisdictionRouter, ComplianceGateway)
-6. Optionally create post-call transcription WhisperModel (CPU, int8)
-7. Start audio bridge WebSocket server
-8. Set up ESL event router with Phase 2 handlers
-9. Start event router (blocks)
+3. Initialize data stores (NumberPool, ConsentDB, DNCList, AuditLog)
+4. Set up compliance (USComplianceModule, JurisdictionRouter, ComplianceGateway)
+5. Optionally create post-call transcription WhisperModel (CPU, int8)
+6. Set up ESL -- single persistent connection for event-driven commands
+7. Initialize SMSClient (optional -- only if SMSC configured)
+8. Create ToolExecutor wiring ESL + SMS + compliance + pool
+9. Initialize voice pipeline with tool_executor for agent tool-use support
+10. Start audio bridge WebSocket server
+11. Set up ESL event router with Phase 2/3 handlers
+12. Start event router (blocks)
 
 The outbound call path: DID checkout -> ComplianceGateway.originate_checked()
 (with audit logging) -> ESL originate -> recording start on CHANNEL_ANSWER ->
@@ -20,11 +23,11 @@ No outbound call can bypass the compliance gateway. The system is structurally
 incapable of placing a non-compliant call.
 
 Usage:
+    holler call +14155551234                       # Originate outbound call via CLI
+    python -m holler.main --call +14155551234      # Direct invocation
     python -m holler.main                          # Start server (wait for inbound calls)
-    python -m holler.main --call +14155551234      # Originate outbound call
 """
 import asyncio
-import argparse
 import time
 import uuid
 from typing import Dict, Optional
@@ -48,25 +51,23 @@ from holler.countries.us.module import USComplianceModule
 logger = structlog.get_logger()
 
 
-async def main(config: Optional[HollerConfig] = None, call_destination: Optional[str] = None):
-    """Boot the Holler Phase 2 integrated voice pipeline stack."""
+async def main(
+    config: Optional[HollerConfig] = None,
+    call_destination: Optional[str] = None,
+    agent_prompt: Optional[str] = None,
+):
+    """Boot the Holler Phase 3 integrated voice pipeline stack."""
     config = config or HollerConfig.from_env()
 
-    # 1. Initialize voice pipeline (loads STT/TTS/LLM models)
-    logger.info("main.initializing_pipeline")
-    pipeline = VoicePipeline(
-        stt_config=config.stt,
-        tts_config=config.tts,
-        llm_config=config.llm,
-        vad_config=config.vad,
-    )
-    await pipeline.initialize()
+    # Override system prompt if agent_prompt provided (e.g. from `holler call --agent`)
+    if agent_prompt:
+        config.llm.system_prompt = agent_prompt
 
-    # 2. Create Redis client for number pool
+    # 1. Create Redis client for number pool
     import redis.asyncio as aioredis
     redis_client = aioredis.from_url(config.pool.redis_url, decode_responses=True)
 
-    # 3. Initialize data stores
+    # 2. Initialize data stores
     pool = NumberPool(redis_client, pool_key=config.pool.pool_key)
     # Initialize pool with configured DIDs
     if config.pool.dids:
@@ -82,7 +83,7 @@ async def main(config: Optional[HollerConfig] = None, call_destination: Optional
     audit_log = AuditLog(config.compliance.audit_log_dir, config.compliance.audit_db_path)
     await audit_log.initialize()
 
-    # 4. Set up compliance
+    # 3. Set up compliance
     us_module = USComplianceModule(consent_db=consent_db, dnc_list=dnc_list)
     router = JurisdictionRouter()
     router.register("+1", us_module)
@@ -93,8 +94,8 @@ async def main(config: Optional[HollerConfig] = None, call_destination: Optional
         timeout=config.compliance.check_timeout_s,
     )
 
-    # 5. Optionally create post-call transcription WhisperModel (CPU, int8)
-    # Separate instance from live STT model — per Pitfall 6 in research.
+    # 4. Optionally create post-call transcription WhisperModel (CPU, int8)
+    # Separate instance from live STT model -- per Pitfall 6 in research.
     transcript_model = None
     if config.recording.transcript_enabled:
         try:
@@ -112,16 +113,46 @@ async def main(config: Optional[HollerConfig] = None, call_destination: Optional
         except Exception as e:
             logger.warning("main.transcript_model_unavailable", error=str(e))
 
-    # 6. Start audio bridge WebSocket server
+    # 5. Set up ESL -- single persistent connection for event-driven commands
+    esl = FreeSwitchESL(config.esl)
+    await esl.connect()
+
+    # 6. Initialize SMS client (optional -- only if SMSC is configured with credentials)
+    from holler.core.sms.client import SMSClient
+    sms_client = SMSClient(config.sms)
+    if config.sms.smsc_host and config.sms.password:
+        try:
+            await sms_client.initialize()
+            logger.info("main.sms_initialized", host=config.sms.smsc_host)
+        except Exception as e:
+            logger.warning("main.sms_unavailable", error=str(e))
+
+    # 7. Create ToolExecutor wiring ESL + SMS + compliance + pool
+    from holler.core.agent.executor import ToolExecutor
+    tool_executor = ToolExecutor(
+        esl=esl,
+        sms_client=sms_client,
+        compliance_gateway=gateway,
+        pool=pool,
+    )
+
+    # 8. Initialize voice pipeline (loads STT/TTS/LLM models) with tool_executor
+    logger.info("main.initializing_pipeline")
+    pipeline = VoicePipeline(
+        stt_config=config.stt,
+        tts_config=config.tts,
+        llm_config=config.llm,
+        vad_config=config.vad,
+        tool_executor=tool_executor,
+    )
+    await pipeline.initialize()
+
+    # 9. Start audio bridge WebSocket server
     bridge = AudioBridge(pipeline, config.audio_bridge)
     await bridge.start()
     logger.info("main.audio_bridge_ready", port=config.audio_bridge.port)
 
-    # 7. Set up ESL — single persistent connection for event-driven commands
-    esl = FreeSwitchESL(config.esl)
-    await esl.connect()
-
-    # 8. Set up ESL event router with Phase 2 handlers
+    # 10. Set up ESL event router with Phase 2/3 handlers
     event_router = EventRouter(config.esl)
 
     # Per-call telecom session tracking (parallel to EventRouter._active_calls)
@@ -201,7 +232,7 @@ async def main(config: Optional[HollerConfig] = None, call_destination: Optional
             )
             await esl.hangup(call_uuid, "NORMAL_CLEARING")
 
-    # 9. Optionally originate an outbound call
+    # 11. Optionally originate an outbound call
     if call_destination:
         asyncio.create_task(
             _originate_call(
@@ -216,13 +247,14 @@ async def main(config: Optional[HollerConfig] = None, call_destination: Optional
             )
         )
 
-    # 10. Start event router (blocks)
+    # 12. Start event router (blocks)
     logger.info("main.starting_event_router")
     try:
         await event_router.start()
     except KeyboardInterrupt:
         logger.info("main.shutting_down")
     finally:
+        await sms_client.stop()
         await bridge.stop()
         await esl.disconnect()
         await consent_db.close()
@@ -255,7 +287,7 @@ async def _originate_call(
     await asyncio.sleep(1)  # Wait for event router to be ready
     session_uuid = str(uuid.uuid4())
 
-    # D-03: Acquire DID first — no call can originate without a checked-out DID
+    # D-03: Acquire DID first -- no call can originate without a checked-out DID
     did = await pool.checkout()
 
     session = TelecomSession(
@@ -297,15 +329,15 @@ async def _originate_call(
             reason=str(e),
         )
         # Note: pool.release() is called inside ComplianceGateway.originate_checked()
-        # when it raises ComplianceBlockError — no double-release needed.
+        # when it raises ComplianceBlockError -- no double-release needed.
 
 
-def cli():
-    """CLI entry point."""
-    parser = argparse.ArgumentParser(description="Holler Voice Pipeline")
-    parser.add_argument("--call", type=str, help="Originate outbound call to this number (E.164)")
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Holler Voice Pipeline (direct)")
+    parser.add_argument("--call", type=str, help="Originate outbound call (E.164)")
+    parser.add_argument("--agent", type=str, help="System prompt for the call agent")
     args = parser.parse_args()
-
     structlog.configure(
         processors=[
             structlog.processors.TimeStamper(fmt="iso"),
@@ -313,9 +345,4 @@ def cli():
             structlog.dev.ConsoleRenderer(),
         ],
     )
-
-    asyncio.run(main(call_destination=args.call))
-
-
-if __name__ == "__main__":
-    cli()
+    asyncio.run(main(call_destination=args.call, agent_prompt=args.agent))
