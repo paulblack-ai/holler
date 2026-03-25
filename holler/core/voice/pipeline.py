@@ -3,11 +3,17 @@
 Orchestrates the async flow: Audio -> VAD -> STT -> LLM -> TTS -> Audio.
 No stage waits for the previous stage to fully complete (D-07).
 Handles barge-in by cancelling TTS and re-entering listening state (D-10).
+
+When a ToolExecutor is provided, the pipeline intercepts ToolCallSentinel
+from the LLM stream, executes the tool, feeds the result back, and continues
+the conversation (D-14, AGENT-01). TTS is flushed before tool execution to
+prevent pipeline deadlock (Pitfall 2).
 """
 import asyncio
+import json
 import time
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Optional
+from typing import TYPE_CHECKING, Callable, Dict, Optional
 
 import numpy as np
 import structlog
@@ -17,6 +23,10 @@ from holler.core.voice.stt import STTEngine, STTConfig
 from holler.core.voice.tts import TTSEngine, TTSConfig
 from holler.core.voice.llm import LLMClient, LLMConfig
 from holler.core.voice.resampler import downsample_24k_to_8k
+from holler.core.agent.tools import ToolCallSentinel, get_tools
+
+if TYPE_CHECKING:
+    from holler.core.agent.executor import ToolExecutor
 
 logger = structlog.get_logger()
 
@@ -39,6 +49,10 @@ class VoicePipeline:
 
     One pipeline instance is shared across all calls. Each call gets a VoiceSession.
     STT and TTS engines are initialized once at startup and shared.
+
+    When tool_executor is provided, the pipeline handles LLM tool invocations:
+    intercepts ToolCallSentinel, executes via ToolExecutor, feeds result back
+    to LLM for follow-up response. Backward compatible when tool_executor=None.
     """
 
     def __init__(
@@ -47,11 +61,13 @@ class VoicePipeline:
         tts_config: Optional[TTSConfig] = None,
         llm_config: Optional[LLMConfig] = None,
         vad_config: Optional[VADConfig] = None,
+        tool_executor: Optional["ToolExecutor"] = None,
     ):
         self.stt = STTEngine(stt_config)
         self.tts = TTSEngine(tts_config)
         self.llm = LLMClient(llm_config)
         self.vad_config = vad_config or VADConfig()
+        self.tool_executor = tool_executor
         self._sessions: Dict[str, VoiceSession] = {}
 
     async def initialize(self) -> None:
@@ -137,7 +153,18 @@ class VoicePipeline:
         audio_16k: np.ndarray,
         send_audio_callback: Callable,
     ) -> None:
-        """Run the STT -> LLM -> TTS pipeline for a complete turn."""
+        """Run the STT -> LLM -> TTS pipeline for a complete turn.
+
+        Supports tool-call interception when tool_executor is set:
+        1. STT transcribes speech.
+        2. LLM streams tokens (with tool definitions if tool_executor set).
+        3. TTS consumes tokens and sends audio.
+        4. If ToolCallSentinel received: flush TTS, execute tool, feed result
+           back to LLM, continue for up to max_tool_rounds rounds.
+
+        When tool_executor is None, behaves exactly as the original text-only
+        pipeline (backward compatible).
+        """
         turn_start = time.monotonic()
 
         try:
@@ -156,46 +183,121 @@ class VoicePipeline:
                 duration_ms=round((stt_time - turn_start) * 1000),
             )
 
-            # LLM streaming -> TTS streaming
-            session.vad.set_pipeline_state(PipelineState.SPEAKING)
-            session._tts_cancel.clear()
+            # Tool-call loop: LLM may return tool calls requiring re-prompting.
+            # max_tool_rounds prevents infinite loops.
+            max_tool_rounds = 5
+            messages_for_round = transcript  # First round uses the transcript
+            extra_history = []              # Tool results accumulated per round
 
-            token_queue: asyncio.Queue = asyncio.Queue()
-            full_response = []
+            full_response = []  # Final text response tokens (for history)
 
-            # Start LLM streaming into token queue
-            async def feed_tokens():
-                async for token in self.llm.stream_response(transcript, session.history):
+            for round_num in range(max_tool_rounds):
+                session.vad.set_pipeline_state(PipelineState.SPEAKING)
+                session._tts_cancel.clear()
+
+                token_queue: asyncio.Queue = asyncio.Queue()
+                round_response: list = []
+                tool_sentinel: Optional[ToolCallSentinel] = None
+
+                tools = get_tools() if self.tool_executor else None
+                history = session.history + extra_history
+
+                async def feed_tokens(
+                    _transcript=messages_for_round,
+                    _history=history,
+                    _tools=tools,
+                ):
+                    nonlocal tool_sentinel
+                    async for token in self.llm.stream_response(_transcript, _history, tools=_tools):
+                        if session._tts_cancel.is_set():
+                            break
+                        if isinstance(token, ToolCallSentinel):
+                            # Flush TTS (prevents deadlock — Pitfall 2)
+                            tool_sentinel = token
+                            await token_queue.put(None)
+                            return
+                        await token_queue.put(token)
+                        round_response.append(token)
+                    await token_queue.put(None)  # Normal end sentinel
+
+                llm_task = asyncio.create_task(feed_tokens())
+
+                # TTS streaming from token queue -> send audio back
+                first_audio = True
+                async for samples, sample_rate in self.tts.synthesize_stream(token_queue):
                     if session._tts_cancel.is_set():
                         break
-                    await token_queue.put(token)
-                    full_response.append(token)
-                await token_queue.put(None)  # Sentinel
+                    if first_audio:
+                        ttfa = time.monotonic()
+                        logger.info(
+                            "pipeline.first_audio",
+                            call_uuid=session.call_uuid,
+                            total_latency_ms=round((ttfa - turn_start) * 1000),
+                        )
+                        first_audio = False
+                    # Downsample from 24kHz to 8kHz and send to FreeSWITCH
+                    pcm_bytes = downsample_24k_to_8k(samples)
+                    await send_audio_callback(pcm_bytes)
 
-            llm_task = asyncio.create_task(feed_tokens())
+                await llm_task
 
-            # TTS streaming from token queue -> send audio back
-            first_audio = True
-            async for samples, sample_rate in self.tts.synthesize_stream(token_queue):
-                if session._tts_cancel.is_set():
+                if tool_sentinel and self.tool_executor:
+                    # Execute tool calls and accumulate results
+                    tool_results = []
+                    for tc in tool_sentinel.tool_calls:
+                        raw_args = tc["arguments"]
+                        args = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+                        logger.info(
+                            "pipeline.tool_call",
+                            call_uuid=session.call_uuid,
+                            tool=tc["name"],
+                            args=args,
+                        )
+                        result = await self.tool_executor.execute(tc["name"], args, session)
+                        logger.info(
+                            "pipeline.tool_result",
+                            call_uuid=session.call_uuid,
+                            tool=tc["name"],
+                            result=result,
+                        )
+                        tool_results.append({"tool_call_id": tc["id"], "result": result})
+
+                    # Build history entries for the next LLM round
+                    # Assistant turn with tool_calls (role=assistant, content=None)
+                    extra_history.append({
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [
+                            {
+                                "id": tc["id"],
+                                "type": "function",
+                                "function": {
+                                    "name": tc["name"],
+                                    "arguments": tc["arguments"],
+                                },
+                            }
+                            for tc in tool_sentinel.tool_calls
+                        ],
+                    })
+                    # Tool result turns (role=tool)
+                    for tr in tool_results:
+                        extra_history.append(
+                            self.llm.build_tool_result_entry(tr["tool_call_id"], tr["result"])
+                        )
+
+                    messages_for_round = ""  # LLM continues from tool results
+                    tool_sentinel = None
+                    continue  # Next round
+
+                else:
+                    # Normal text response — collect tokens and done
+                    full_response = round_response
                     break
-                if first_audio:
-                    ttfa = time.monotonic()
-                    logger.info(
-                        "pipeline.first_audio",
-                        call_uuid=session.call_uuid,
-                        total_latency_ms=round((ttfa - turn_start) * 1000),
-                    )
-                    first_audio = False
-                # Downsample from 24kHz to 8kHz and send to FreeSWITCH
-                pcm_bytes = downsample_24k_to_8k(samples)
-                await send_audio_callback(pcm_bytes)
 
-            await llm_task
-
-            # Update conversation history
+            # Update conversation history with user turn and final assistant turn
             session.history.append({"role": "user", "content": transcript})
-            session.history.append({"role": "assistant", "content": "".join(full_response)})
+            if full_response:
+                session.history.append({"role": "assistant", "content": "".join(full_response)})
 
             turn_end = time.monotonic()
             logger.info(
