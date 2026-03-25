@@ -122,6 +122,7 @@ Recent decisions affecting current work:
 - [Phase 05-sms-inbound-stt-optout-wiring]: VoicePipeline.__init__ backward compatible: on_optout/opt_out_keywords params default to None/[] respectively
 - [Phase quick]: HOLLER_COMPOSE_FILE env var override in _start_services() — env var takes priority over __file__-based and CWD resolution
 - [Phase quick]: CWD fallback in _start_services() — Path.cwd()/docker/ checked when __file__-based path has no docker-compose.yml; handles pip install scenario
+- [Phase quick]: FreeSWITCH Docker build uses 7-stage Alpine source build (signalwire/freeswitch v1.10.12) — libks and spandsp compiled from source since Alpine 3.21 has no packages for them; no SignalWire PAT required
 
 ### Pending Todos
 
@@ -139,9 +140,10 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260324-r7i | Align README, create missing docs (CONTRIBUTING.md, LICENSE) | 2026-03-25 | 9b6fa15 | [260324-r7i-align-the-readme-missing-docs-quick-pass](./quick/260324-r7i-align-the-readme-missing-docs-quick-pass/) |
 | 260324-ubt | Fix holler init: correct Kokoro ONNX HF repo (fastrtc/kokoro-onnx) + CWD fallback for docker-compose.yml | 2026-03-25 | 60c2072 | [260324-ubt-fix-holler-init-kokoro-onnx-model-downlo](./quick/260324-ubt-fix-holler-init-kokoro-onnx-model-downlo/) |
+| 260325-cmo | Remove SignalWire PAT requirement: FreeSWITCH source build on Alpine, zero vendor accounts | 2026-03-25 | 4d90c79 | [260325-cmo-audit-and-fix-vendor-dependencies-contra](./quick/260325-cmo-audit-and-fix-vendor-dependencies-contra/) |
 
 ## Session Continuity
 
-Last session: 2026-03-25T03:00:35.361Z
-Stopped at: Completed quick/260324-ubt-fix-holler-init-kokoro-onnx-model-downlo/260324-ubt-PLAN.md
+Last session: 2026-03-25T14:14:56Z
+Stopped at: Completed quick/260325-cmo-audit-and-fix-vendor-dependencies-contra/260325-cmo-PLAN.md
 Resume file: None
