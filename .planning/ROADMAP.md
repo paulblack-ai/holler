@@ -15,6 +15,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: FreeSWITCH + Voice Pipeline** - Working voice call through local hardware with streaming STT/TTS under 800ms
 - [x] **Phase 2: Telecom Abstraction + Compliance** - Session state, number pool, mandatory compliance gateway, US module, call records (completed 2026-03-24)
 - [x] **Phase 3: SMS + Agent Interface + CLI** - SMPP messaging, tool-use protocol, and four-command onboarding (completed 2026-03-25)
+- [ ] **Phase 4: CLI + Docker Onboarding Fixes** - Fix docker compose path, trunk credential propagation to FreeSWITCH
+- [ ] **Phase 5: SMS Inbound + STT Opt-Out Wiring** - Wire inbound SMS handler, wire STT keyword opt-out in audio path
 
 ## Phase Details
 
@@ -77,13 +79,38 @@ Plans:
 
 **UI hint**: no
 
+### Phase 4: CLI + Docker Onboarding Fixes
+**Goal**: The four-command onboarding flow (`pip install holler` → `holler init` → `holler trunk add` → `holler call`) completes end-to-end without error — Docker services start from any working directory and trunk credentials propagate to FreeSWITCH
+**Depends on**: Phase 3
+**Requirements**: AGENT-03, AGENT-04, AGENT-06
+**Gap Closure**: Closes gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `holler init` runs `docker compose -f docker/docker-compose.yml up -d` regardless of the user's working directory
+  2. `holler trunk add --host sip.example.com --user alice --pass secret` writes env vars that FreeSWITCH reads — the SIP gateway in `external.xml` receives the correct host, username, and password
+  3. The full four-command sequence on a clean machine results in a running FreeSWITCH+Redis stack with configured SIP trunk credentials
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 5: SMS Inbound + STT Opt-Out Wiring
+**Goal**: Inbound SMS messages route to an agent session handler, and spoken opt-out keywords during a call trigger consent DB update and call termination — closing the two unwired paths from Phase 2 and Phase 3
+**Depends on**: Phase 3
+**Requirements**: SMS-02, COMP-04
+**Gap Closure**: Closes gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. An inbound SMS arriving via SMPP is received by HollerHook and routed to a registered handler in main.py — the message is not silently discarded
+  2. When a caller says "stop" or "remove me" during a call, `check_optout_keywords()` detects the keyword, writes an opt-out record to ConsentDB, and the call is terminated
+**Plans**: TBD
+**UI hint**: no
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
 | 3. SMS + Agent Interface + CLI | 4/4 | Complete   | 2026-03-25 |
+| 4. CLI + Docker Onboarding Fixes | 0/TBD | Not started | - |
+| 5. SMS Inbound + STT Opt-Out Wiring | 0/TBD | Not started | - |

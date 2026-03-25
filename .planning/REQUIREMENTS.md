@@ -37,7 +37,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **COMP-01**: Compliance gateway is mandatory in the outbound call path — no bypass route exists
 - [x] **COMP-02**: US module enforces TCPA: prior consent verification, caller identification, time-of-day restrictions (8am-9pm recipient local time)
 - [x] **COMP-03**: US module performs DNC (Do Not Call) list check before call connects
-- [x] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
+- [ ] **COMP-04**: Consent/opt-out state machine captures and enforces opt-out requests (DTMF or spoken) during call
 - [x] **COMP-05**: Audit log records every compliance check with timestamp, result, and call context
 - [x] **COMP-06**: Country module plugin interface allows adding new jurisdictions without modifying core
 - [x] **COMP-07**: Country module template (`_template/`) scaffolds a new jurisdiction with documented contract
@@ -45,17 +45,17 @@ Requirements for initial release. Each maps to roadmap phases.
 ### SMS
 
 - [x] **SMS-01**: Agent can send an SMS to a phone number via SMPP protocol
-- [x] **SMS-02**: Agent can receive inbound SMS and route to an agent session
+- [ ] **SMS-02**: Agent can receive inbound SMS and route to an agent session
 - [x] **SMS-03**: SMS delivery status (sent, delivered, failed) is reported back to the agent
 
 ### Agent Interface
 
 - [x] **AGENT-01**: Tool-use protocol exposes `call`, `sms`, `hangup`, `transfer` actions as LLM tool invocations
 - [x] **AGENT-02**: Agent interface is LLM-agnostic — works with any model that supports tool/function calling
-- [x] **AGENT-03**: CLI provides `holler init` to download models and start local services
-- [x] **AGENT-04**: CLI provides `holler trunk add` to configure SIP trunk credentials
+- [ ] **AGENT-03**: CLI provides `holler init` to download models and start local services
+- [ ] **AGENT-04**: CLI provides `holler trunk add` to configure SIP trunk credentials
 - [x] **AGENT-05**: CLI provides `holler call` to make a call with an agent prompt in one command
-- [x] **AGENT-06**: Four-command onboarding: install → init → trunk → call
+- [ ] **AGENT-06**: Four-command onboarding: install → init → trunk → call
 
 ## v2 Requirements
 
@@ -124,19 +124,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-01 | Phase 2 | Complete |
 | COMP-02 | Phase 2 | Complete |
 | COMP-03 | Phase 2 | Complete |
-| COMP-04 | Phase 2 | Complete |
+| COMP-04 | Phase 5 | Pending |
 | COMP-05 | Phase 2 | Complete |
 | COMP-06 | Phase 2 | Complete |
 | COMP-07 | Phase 2 | Complete |
 | SMS-01 | Phase 3 | Complete |
-| SMS-02 | Phase 3 | Complete |
+| SMS-02 | Phase 5 | Pending |
 | SMS-03 | Phase 3 | Complete |
 | AGENT-01 | Phase 3 | Complete |
 | AGENT-02 | Phase 3 | Complete |
-| AGENT-03 | Phase 3 | Complete |
-| AGENT-04 | Phase 3 | Complete |
+| AGENT-03 | Phase 4 | Pending |
+| AGENT-04 | Phase 4 | Pending |
 | AGENT-05 | Phase 3 | Complete |
-| AGENT-06 | Phase 3 | Complete |
+| AGENT-06 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 32 total
