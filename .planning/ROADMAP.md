@@ -72,7 +72,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — SMS client (aiosmpplib ESME), delivery receipts, inbound routing, compliance SMS extension
 - [x] 03-02-PLAN.md — Tool definitions (call/sms/hangup/transfer), ToolExecutor, Anthropic adapter
-- [ ] 03-03-PLAN.md — LLM tool-call streaming, VoicePipeline tool-call interception and agent loop
+- [x] 03-03-PLAN.md — LLM tool-call streaming, VoicePipeline tool-call interception and agent loop
 - [ ] 03-04-PLAN.md — Config extension (.holler.env), Click CLI (init/trunk/call), main.py integration
 
 **UI hint**: no
@@ -86,4 +86,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
-| 3. SMS + Agent Interface + CLI | 2/4 | In Progress|  |
+| 3. SMS + Agent Interface + CLI | 3/4 | In Progress|  |

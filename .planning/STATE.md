@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-25T00:13:04.983Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-03-25T00:18:46.903Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 03 (sms-agent-interface-cli) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: 3 of 4
 | Phase 02-telecom-abstraction-compliance P05 | 4min | 3 tasks | 6 files |
 | Phase 03-sms-agent-interface-cli P02 | 3min | 1 tasks | 5 files |
 | Phase 03-sms-agent-interface-cli P01 | 15min | 2 tasks | 6 files |
+| Phase 03-sms-agent-interface-cli P03 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Recent decisions affecting current work:
 - [Phase 03-sms-agent-interface-cli]: Shared delivery_store dict between SMSClient and HollerHook — hook updates in-place, client reads; avoids separate sync mechanism
 - [Phase 03-sms-agent-interface-cli]: HollerHook duck-typed (no AbstractHook inheritance at class definition) to avoid hard aiosmpplib import at module load
 - [Phase 03-sms-agent-interface-cli]: sms_checked() reuses ComplianceModule.check_outbound() for SMS — same contract as voice; gateway method differentiates the action
+- [Phase 03-sms-agent-interface-cli]: tool_calls_accumulator dict keyed by chunk index — reassembles fragmented tool_calls from streaming delta chunks
+- [Phase 03-sms-agent-interface-cli]: TTS queue flushed via None sentinel before tool execution — prevents pipeline deadlock (Pitfall 2)
+- [Phase 03-sms-agent-interface-cli]: extra_history scoped to turn — tool results not added to session.history until turn completes (clean rollback semantics)
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T00:13:04.973Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-25T00:18:46.891Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
