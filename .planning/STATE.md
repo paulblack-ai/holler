@@ -143,9 +143,10 @@ None yet.
 | 260325-cmo | Remove SignalWire PAT requirement: FreeSWITCH source build on Alpine, zero vendor accounts | 2026-03-25 | 4d90c79 | [260325-cmo-audit-and-fix-vendor-dependencies-contra](./quick/260325-cmo-audit-and-fix-vendor-dependencies-contra/) |
 | 260325-iha | Fix FreeSWITCH Docker build: Alpine 3.20, spandsp autoreconf, disable-libvpx, runtime libs | 2026-03-25 | 79fd918 | [260325-iha-fix-freeswitch-docker-build-failure-at-b](./quick/260325-iha-fix-freeswitch-docker-build-failure-at-b/) |
 | 260325-kq8 | Fix FreeSWITCH doubled config path (--sysconfdir=/etc) + consent_db mkdir parent dir | 2026-03-25 | 298bc55 | [260325-kq8-fix-freeswitch-doubled-config-path-conse](./quick/260325-kq8-fix-freeswitch-doubled-config-path-conse/) |
+| 260325-oc9 | Add LLM endpoint health check to holler init: green success / yellow warning with Ollama install steps | 2026-03-25 | bc85ad2 | [260325-oc9-llm-endpoint-health-check-during-init](./quick/260325-oc9-llm-endpoint-health-check-during-init/) |
 
 ## Session Continuity
 
-Last session: 2026-03-25T14:14:56Z
-Stopped at: Completed quick/260325-cmo-audit-and-fix-vendor-dependencies-contra/260325-cmo-PLAN.md
+Last session: 2026-03-25T22:35:23Z
+Stopped at: Completed quick/260325-oc9-llm-endpoint-health-check-during-init/260325-oc9-PLAN.md
 Resume file: None
