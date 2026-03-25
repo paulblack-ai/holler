@@ -2,8 +2,6 @@ services:
   freeswitch:
     build:
       context: ./freeswitch
-      args:
-        SIGNALWIRE_TOKEN: ${SIGNALWIRE_TOKEN}
     network_mode: "host"
     environment:
       - HOLLER_TRUNK_HOST=${HOLLER_TRUNK_HOST:-}
