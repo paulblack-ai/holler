@@ -141,6 +141,7 @@ None yet.
 | 260324-r7i | Align README, create missing docs (CONTRIBUTING.md, LICENSE) | 2026-03-25 | 9b6fa15 | [260324-r7i-align-the-readme-missing-docs-quick-pass](./quick/260324-r7i-align-the-readme-missing-docs-quick-pass/) |
 | 260324-ubt | Fix holler init: correct Kokoro ONNX HF repo (fastrtc/kokoro-onnx) + CWD fallback for docker-compose.yml | 2026-03-25 | 60c2072 | [260324-ubt-fix-holler-init-kokoro-onnx-model-downlo](./quick/260324-ubt-fix-holler-init-kokoro-onnx-model-downlo/) |
 | 260325-cmo | Remove SignalWire PAT requirement: FreeSWITCH source build on Alpine, zero vendor accounts | 2026-03-25 | 4d90c79 | [260325-cmo-audit-and-fix-vendor-dependencies-contra](./quick/260325-cmo-audit-and-fix-vendor-dependencies-contra/) |
+| 260325-iha | Fix FreeSWITCH Docker build: Alpine 3.20, spandsp autoreconf, disable-libvpx, runtime libs | 2026-03-25 | 79fd918 | [260325-iha-fix-freeswitch-docker-build-failure-at-b](./quick/260325-iha-fix-freeswitch-docker-build-failure-at-b/) |
 
 ## Session Continuity
 
