@@ -7,6 +7,7 @@ consent records). Latest row for a phone number determines current consent state
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 import aiosqlite
@@ -30,6 +31,7 @@ class ConsentDB:
         Idempotent — safe to call multiple times.
         """
         if self._db is None:
+            Path(self._db_path).parent.mkdir(parents=True, exist_ok=True)
             self._db = await aiosqlite.connect(self._db_path)
         await self._db.execute("PRAGMA journal_mode=WAL")
         await self._db.execute("""
