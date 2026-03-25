@@ -39,7 +39,7 @@ class ConsentDB:
                 consent_type TEXT NOT NULL CHECK(consent_type IN ('express', 'written')),
                 granted_at   TEXT NOT NULL,
                 revoked_at   TEXT,
-                source       TEXT NOT NULL CHECK(source IN ('api', 'call', 'sms', 'dtmf')),
+                source       TEXT NOT NULL CHECK(source IN ('api', 'call', 'sms', 'dtmf', 'stt')),
                 call_uuid    TEXT,
                 created_at   TEXT NOT NULL DEFAULT (datetime('now', 'utc'))
             )

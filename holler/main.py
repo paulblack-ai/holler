@@ -30,7 +30,7 @@ Usage:
 import asyncio
 import time
 import uuid
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 import structlog
 
 from holler.config import HollerConfig
@@ -47,6 +47,7 @@ from holler.core.compliance.consent_db import ConsentDB
 from holler.core.compliance.dnc import DNCList
 from holler.core.compliance.audit import AuditLog
 from holler.countries.us.module import USComplianceModule
+from holler.core.sms.session import SMSSession
 
 logger = structlog.get_logger()
 
@@ -117,12 +118,62 @@ async def main(
     esl = FreeSwitchESL(config.esl)
     await esl.connect()
 
+    # Per-call telecom session tracking (moved before pipeline/SMS init -- needed for callbacks)
+    telecom_sessions: Dict[str, TelecomSession] = {}
+
+    # --- Parse opt-out keywords from config ---
+    opt_out_keywords = [kw.strip() for kw in config.compliance.opt_out_keywords.split(",") if kw.strip()]
+
+    # --- STT opt-out callback (COMP-04, D-03) ---
+    async def _handle_stt_optout(call_uuid: str, keyword: str) -> None:
+        """Handle STT keyword opt-out: record to consent DB, hang up call."""
+        if call_uuid in telecom_sessions:
+            session = telecom_sessions[call_uuid]
+            await consent_db.record_optout(
+                phone_number=session.destination,
+                source="stt",
+                call_uuid=call_uuid,
+            )
+            logger.info(
+                "main.opt_out_stt",
+                call_uuid=call_uuid,
+                destination=session.destination,
+                keyword=keyword,
+            )
+            await esl.hangup(call_uuid, "NORMAL_CLEARING")
+
+    # --- Inbound SMS handler (SMS-02, D-01) ---
+    sms_sessions: Dict[str, SMSSession] = {}
+
+    async def _handle_inbound_sms(sender: str, text: str) -> None:
+        """Handle inbound SMS: create/update SMS session, log message."""
+        session_key = sender  # Key by sender phone number
+        if session_key not in sms_sessions:
+            sms_sessions[session_key] = SMSSession(
+                session_uuid=str(uuid.uuid4()),
+                sender=sender,
+                destination="",  # Inbound -- we are the destination
+                created_at=time.monotonic(),
+            )
+        sms_session = sms_sessions[session_key]
+        sms_session.messages.append({
+            "role": "user",
+            "text": text,
+            "timestamp": time.monotonic(),
+        })
+        logger.info(
+            "main.inbound_sms",
+            sender=sender,
+            text_len=len(text or ""),
+            session_uuid=sms_session.session_uuid,
+        )
+
     # 6. Initialize SMS client (optional -- only if SMSC is configured with credentials)
     from holler.core.sms.client import SMSClient
     sms_client = SMSClient(config.sms)
     if config.sms.smsc_host and config.sms.password:
         try:
-            await sms_client.initialize()
+            await sms_client.initialize(inbound_handler=_handle_inbound_sms)
             logger.info("main.sms_initialized", host=config.sms.smsc_host)
         except Exception as e:
             logger.warning("main.sms_unavailable", error=str(e))
@@ -144,6 +195,8 @@ async def main(
         llm_config=config.llm,
         vad_config=config.vad,
         tool_executor=tool_executor,
+        on_optout=_handle_stt_optout,
+        opt_out_keywords=opt_out_keywords,
     )
     await pipeline.initialize()
 
@@ -154,12 +207,6 @@ async def main(
 
     # 10. Set up ESL event router with Phase 2/3 handlers
     event_router = EventRouter(config.esl)
-
-    # Per-call telecom session tracking (parallel to EventRouter._active_calls)
-    telecom_sessions: Dict[str, TelecomSession] = {}
-
-    # --- Parse opt-out keywords from config ---
-    opt_out_keywords = [kw.strip() for kw in config.compliance.opt_out_keywords.split(",") if kw.strip()]
 
     async def _post_call_transcript(session: TelecomSession, model) -> None:
         """Background task: transcribe recording after hangup."""

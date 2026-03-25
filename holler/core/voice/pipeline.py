@@ -62,12 +62,16 @@ class VoicePipeline:
         llm_config: Optional[LLMConfig] = None,
         vad_config: Optional[VADConfig] = None,
         tool_executor: Optional["ToolExecutor"] = None,
+        on_optout: Optional[Callable] = None,
+        opt_out_keywords: Optional[list] = None,
     ):
         self.stt = STTEngine(stt_config)
         self.tts = TTSEngine(tts_config)
         self.llm = LLMClient(llm_config)
         self.vad_config = vad_config or VADConfig()
         self.tool_executor = tool_executor
+        self._on_optout = on_optout
+        self._opt_out_keywords = opt_out_keywords or []
         self._sessions: Dict[str, VoiceSession] = {}
 
     async def initialize(self) -> None:
@@ -182,6 +186,22 @@ class VoicePipeline:
                 transcript=transcript[:100],
                 duration_ms=round((stt_time - turn_start) * 1000),
             )
+
+            # STT keyword opt-out check (COMP-04, D-03)
+            if self._opt_out_keywords and transcript:
+                from holler.core.telecom.optout import check_optout_keywords  # avoid circular import
+                matched = check_optout_keywords(transcript, self._opt_out_keywords)
+                if matched:
+                    logger.info(
+                        "pipeline.optout_detected",
+                        call_uuid=session.call_uuid,
+                        keyword=matched,
+                        transcript=transcript[:100],
+                    )
+                    if self._on_optout:
+                        await self._on_optout(session.call_uuid, matched)
+                    session.vad.set_pipeline_state(PipelineState.LISTENING)
+                    return  # Do NOT send transcript to LLM
 
             # Tool-call loop: LLM may return tool calls requiring re-prompting.
             # max_tool_rounds prevents infinite loops.

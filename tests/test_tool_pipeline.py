@@ -260,6 +260,8 @@ def _make_pipeline_with_mocks(llm_items, tool_executor=None, tool_result=None):
     pipeline.vad_config = VADConfig()
     pipeline._sessions = {}
     pipeline.tool_executor = tool_executor
+    pipeline._opt_out_keywords = []  # No opt-out keywords in these tests
+    pipeline._on_optout = None
 
     return pipeline
 
@@ -425,6 +427,8 @@ def test_pipeline_no_tool_executor_passes_none_tools():
     pipeline.vad_config = VADConfig()
     pipeline._sessions = {}
     pipeline.tool_executor = None  # No executor
+    pipeline._opt_out_keywords = []
+    pipeline._on_optout = None
 
     session = VoiceSession(
         call_uuid="test", session_uuid="s1",
