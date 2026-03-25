@@ -12,6 +12,7 @@ from holler.core.voice.tts import TTSConfig
 from holler.core.voice.llm import LLMConfig
 from holler.core.voice.vad import VADConfig
 from holler.core.voice.audio_bridge import AudioBridgeConfig
+from holler.core.sms.client import SMSConfig
 
 
 @dataclass
@@ -70,9 +71,19 @@ class HollerConfig:
     pool: PoolConfig
     compliance: ComplianceConfig
     recording: RecordingConfig
+    sms: SMSConfig  # SMPP SMS client config (optional — only used if SMSC is configured)
 
     @classmethod
     def from_env(cls) -> "HollerConfig":
+        # Load .holler.env first (per D-11). File values do NOT override existing
+        # environment variables (override=False) — shell env always wins.
+        from dotenv import load_dotenv
+        load_dotenv(".holler.env", override=False)
+
+        # SIP trunk config written by `holler trunk add`:
+        # HOLLER_TRUNK_HOST, HOLLER_TRUNK_USER, HOLLER_TRUNK_PASS are used by
+        # FreeSWITCH gateway config and written by `holler trunk add`.
+
         return cls(
             esl=ESLConfig(
                 host=os.getenv("ESL_HOST", "127.0.0.1"),
@@ -125,5 +136,12 @@ class HollerConfig:
                 transcript_enabled=os.getenv("HOLLER_TRANSCRIPT_ENABLED", "true").lower() == "true",
                 transcript_device=os.getenv("HOLLER_TRANSCRIPT_DEVICE", "cpu"),
                 transcript_compute_type=os.getenv("HOLLER_TRANSCRIPT_COMPUTE_TYPE", "int8"),
+            ),
+            sms=SMSConfig(
+                smsc_host=os.getenv("HOLLER_SMSC_HOST", "127.0.0.1"),
+                smsc_port=int(os.getenv("HOLLER_SMSC_PORT", "2775")),
+                system_id=os.getenv("HOLLER_SMSC_SYSTEM_ID", "holler"),
+                password=os.getenv("HOLLER_SMSC_PASSWORD", ""),
+                source_address=os.getenv("HOLLER_SMS_SOURCE", ""),
             ),
         )
