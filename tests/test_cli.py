@@ -312,6 +312,79 @@ class TestStartServices:
             args = mock_run.call_args[0][0]
             assert "--project-directory" in args
 
+    def test_start_services_falls_back_to_cwd(self, tmp_path):
+        """When __file__-based path has no docker-compose.yml, fall back to CWD/docker/."""
+        from holler.cli.commands import _start_services
+        # Create docker/docker-compose.yml in tmp_path (simulates CWD)
+        docker_dir = tmp_path / "docker"
+        docker_dir.mkdir()
+        (docker_dir / "docker-compose.yml").write_text("version: '3'\n")
+        orig_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with mock.patch("holler.cli.commands._get_project_root",
+                            return_value=Path("/nonexistent/bogus/path")), \
+                 mock.patch("holler.cli.commands.subprocess.run") as mock_run, \
+                 mock.patch("holler.cli.commands.click.echo"), \
+                 mock.patch("holler.cli.commands.click.secho"), \
+                 mock.patch("socket.socket"):
+                mock_run.return_value = mock.Mock(returncode=0)
+                _start_services()
+            # subprocess.run must have been called (not early-returned due to missing file)
+            assert mock_run.called, "subprocess.run should be called when CWD fallback resolves"
+            args = mock_run.call_args[0][0]
+            compose_idx = args.index("-f") + 1
+            assert "docker-compose.yml" in args[compose_idx]
+        finally:
+            os.chdir(orig_cwd)
+
+    def test_start_services_respects_env_var_override(self, tmp_path):
+        """HOLLER_COMPOSE_FILE env var overrides all path resolution."""
+        from holler.cli.commands import _start_services
+        # Create a compose file at a custom path
+        custom_compose = tmp_path / "custom-compose.yml"
+        custom_compose.write_text("version: '3'\n")
+        with mock.patch.dict(os.environ, {"HOLLER_COMPOSE_FILE": str(custom_compose)}), \
+             mock.patch("holler.cli.commands.subprocess.run") as mock_run, \
+             mock.patch("holler.cli.commands.click.echo"), \
+             mock.patch("holler.cli.commands.click.secho"), \
+             mock.patch("socket.socket"):
+            mock_run.return_value = mock.Mock(returncode=0)
+            _start_services()
+        assert mock_run.called, "subprocess.run should be called when HOLLER_COMPOSE_FILE is set"
+        args = mock_run.call_args[0][0]
+        compose_idx = args.index("-f") + 1
+        assert args[compose_idx] == str(custom_compose)
+
+    def test_start_services_helpful_error_when_not_found(self, tmp_path):
+        """Prints actionable error when docker-compose.yml not found at any path."""
+        from holler.cli.commands import _start_services
+        orig_cwd = os.getcwd()
+        os.chdir(tmp_path)  # CWD has no docker/ directory
+        try:
+            with mock.patch("holler.cli.commands._get_project_root",
+                            return_value=Path("/nonexistent/bogus/path")), \
+                 mock.patch.dict(os.environ, {}, clear=False), \
+                 mock.patch("holler.cli.commands.subprocess.run") as mock_run, \
+                 mock.patch("holler.cli.commands.click.echo"), \
+                 mock.patch("holler.cli.commands.click.secho") as mock_secho:
+                # Ensure HOLLER_COMPOSE_FILE not set
+                os.environ.pop("HOLLER_COMPOSE_FILE", None)
+                _start_services()
+            # subprocess.run must NOT have been called
+            assert not mock_run.called, "subprocess.run should not be called when compose file missing"
+            # An error message must have been printed
+            error_calls = [
+                c for c in mock_secho.call_args_list
+                if c[1].get("fg") == "red"
+            ]
+            assert len(error_calls) > 0, "Expected red error message when docker-compose.yml not found"
+            error_text = " ".join(str(c[0][0]) for c in error_calls)
+            # Error should mention the project directory or HOLLER_COMPOSE_FILE
+            assert "holler" in error_text.lower() or "docker" in error_text.lower() or "HOLLER_COMPOSE_FILE" in error_text
+        finally:
+            os.chdir(orig_cwd)
+
 
 class TestEnvVarAlignment:
     """Env var names are consistent between CLI, docker-compose, and FreeSWITCH config."""

@@ -228,15 +228,35 @@ def _write_trunk_config(host, user, password):
 def _start_services():
     """Start Docker Compose services and wait for health."""
     click.echo("  Starting Docker Compose services...")
-    project_root = _get_project_root()
-    compose_file = project_root / "docker" / "docker-compose.yml"
-    if not compose_file.exists():
-        click.secho(f"  docker-compose.yml not found at {compose_file}", fg="red")
-        return
+
+    # Check HOLLER_COMPOSE_FILE env var as an explicit override first
+    env_compose = os.environ.get("HOLLER_COMPOSE_FILE")
+    if env_compose:
+        compose_file = Path(env_compose)
+        if not compose_file.exists():
+            click.secho(f"  HOLLER_COMPOSE_FILE={env_compose} not found", fg="red")
+            return
+    else:
+        # Primary: resolve from package location (works in source checkout / editable install)
+        project_root = _get_project_root()
+        compose_file = project_root / "docker" / "docker-compose.yml"
+
+        # Fallback: check CWD (works when user is in project dir with pip install)
+        if not compose_file.exists():
+            compose_file = Path.cwd() / "docker" / "docker-compose.yml"
+
+        if not compose_file.exists():
+            click.secho(
+                "  docker-compose.yml not found. Run from the holler project directory,\n"
+                "  or set HOLLER_COMPOSE_FILE to the path of your docker-compose.yml.",
+                fg="red",
+            )
+            return
+
     try:
         result = subprocess.run(
             ["docker", "compose", "-f", str(compose_file),
-             "--project-directory", str(project_root / "docker"),
+             "--project-directory", str(compose_file.parent),
              "up", "-d"],
             capture_output=True, text=True, timeout=120
         )
