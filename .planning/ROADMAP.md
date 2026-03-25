@@ -28,7 +28,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Python can originate and hang up a raw outbound SIP call via FreeSWITCH ESL against a configured SIP trunk
   2. Python can answer an inbound SIP call and connect it to a voice session
   3. Audio from the caller flows through local faster-whisper STT and produces a partial transcript stream; local Kokoro TTS produces audio streamed back to the call
-  4. The full voice loop (human speaks → VAD gates → STT partial → LLM response → TTS first chunk delivered) completes in under 800ms measured end-to-end
+  4. The full voice loop (human speaks -> VAD gates -> STT partial -> LLM response -> TTS first chunk delivered) completes in under 800ms measured end-to-end
   5. Human barge-in stops TTS playback mid-utterance; silence gates STT to prevent hallucination
 **Plans**: 5 plans
 
@@ -47,7 +47,7 @@ Plans:
 **Requirements**: CALL-04, CALL-05, TEL-01, TEL-02, TEL-03, COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, COMP-06, COMP-07
 **Success Criteria** (what must be TRUE):
   1. A DID is atomically checked out from the number pool at session start and released on call end; no call can originate without a pool DID
-  2. An outbound call to a US number fails to connect (not bypassed, explicitly blocked) if the destination is on the DNC list, outside 8am–9pm recipient local time, or lacks prior consent record
+  2. An outbound call to a US number fails to connect (not bypassed, explicitly blocked) if the destination is on the DNC list, outside 8am-9pm recipient local time, or lacks prior consent record
   3. A caller who opts out mid-call via DTMF or spoken keyword is immediately logged to the append-only consent DB and subsequent calls to that number are blocked
   4. Every compliance check (TCPA, DNC, time-of-day, consent) produces an immutable audit log entry with timestamp, result, and call context
   5. The call recording (WAV) and post-call transcript are persisted and retrievable after the call ends
@@ -103,7 +103,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. An inbound SMS arriving via SMPP is received by HollerHook and routed to a registered handler in main.py — the message is not silently discarded
   2. When a caller says "stop" or "remove me" during a call, `check_optout_keywords()` detects the keyword, writes an opt-out record to ConsentDB, and the call is terminated
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Wire inbound SMS handler in main.py, wire STT opt-out check in voice pipeline, fix consent_db schema
+
 **UI hint**: no
 
 ## Progress
@@ -117,4 +121,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
 | 3. SMS + Agent Interface + CLI | 4/4 | Complete   | 2026-03-25 |
 | 4. CLI + Docker Onboarding Fixes | 1/1 | Complete   | 2026-03-25 |
-| 5. SMS Inbound + STT Opt-Out Wiring | 0/TBD | Not started | - |
+| 5. SMS Inbound + STT Opt-Out Wiring | 0/1 | Not started | - |
