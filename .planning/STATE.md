@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-25T01:14:24.761Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 05-sms-inbound-stt-optout-wiring/05-01-PLAN.md
+last_updated: "2026-03-25T01:29:55.342Z"
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
+  completed_phases: 5
+  total_plans: 16
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** An AI agent can make a phone call from locally-hosted infrastructure with a single tool invocation — no vendor accounts, no API keys, no human in the loop.
-**Current focus:** Phase 04 — cli-docker-onboarding-fixes
+**Current focus:** Phase 05 — sms-inbound-stt-optout-wiring
 
 ## Current Position
 
-Phase: 05
-Plan: Not started
+Phase: 05 (sms-inbound-stt-optout-wiring) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Plan: Not started
 | Phase 03-sms-agent-interface-cli P03 | 5min | 2 tasks | 3 files |
 | Phase 03-sms-agent-interface-cli P04 | 5min | 2 tasks | 6 files |
 | Phase 04-cli-docker-onboarding-fixes P01 | 2m 19s | 2 tasks | 5 files |
+| Phase 05-sms-inbound-stt-optout-wiring P01 | 9min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,9 @@ Recent decisions affecting current work:
 - [Phase 04-cli-docker-onboarding-fixes]: docker compose --project-directory set to docker/ dir so relative volume paths resolve correctly from any CWD
 - [Phase 04-cli-docker-onboarding-fixes]: ${VAR:-} syntax in docker-compose.yml environment block allows unset trunk vars without compose errors
 - [Phase 04-cli-docker-onboarding-fixes]: X-PRE-PROCESS defaults in vars.xml ensure FreeSWITCH starts cleanly when trunk not yet configured
+- [Phase 05-sms-inbound-stt-optout-wiring]: Inline import of check_optout_keywords inside _respond() to avoid circular import (telecom.__init__ -> telecom.session -> voice.pipeline)
+- [Phase 05-sms-inbound-stt-optout-wiring]: telecom_sessions dict moved before pipeline/SMS init so _handle_stt_optout closure captures it at definition time
+- [Phase 05-sms-inbound-stt-optout-wiring]: VoicePipeline.__init__ backward compatible: on_optout/opt_out_keywords params default to None/[] respectively
 
 ### Pending Todos
 
@@ -135,6 +139,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T01:14:24.750Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-sms-inbound-stt-optout-wiring/05-CONTEXT.md
+Last session: 2026-03-25T01:29:55.331Z
+Stopped at: Completed 05-sms-inbound-stt-optout-wiring/05-01-PLAN.md
+Resume file: None

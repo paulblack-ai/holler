@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Telecom Abstraction + Compliance** - Session state, number pool, mandatory compliance gateway, US module, call records (completed 2026-03-24)
 - [x] **Phase 3: SMS + Agent Interface + CLI** - SMPP messaging, tool-use protocol, and four-command onboarding (completed 2026-03-25)
 - [x] **Phase 4: CLI + Docker Onboarding Fixes** - Fix docker compose path, trunk credential propagation to FreeSWITCH (completed 2026-03-25)
-- [ ] **Phase 5: SMS Inbound + STT Opt-Out Wiring** - Wire inbound SMS handler, wire STT keyword opt-out in audio path
+- [x] **Phase 5: SMS Inbound + STT Opt-Out Wiring** - Wire inbound SMS handler, wire STT keyword opt-out in audio path (completed 2026-03-25)
 
 ## Phase Details
 
@@ -106,7 +106,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md — Wire inbound SMS handler in main.py, wire STT opt-out check in voice pipeline, fix consent_db schema
+- [x] 05-01-PLAN.md — Wire inbound SMS handler in main.py, wire STT opt-out check in voice pipeline, fix consent_db schema
 
 **UI hint**: no
 
@@ -121,4 +121,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
 | 3. SMS + Agent Interface + CLI | 4/4 | Complete   | 2026-03-25 |
 | 4. CLI + Docker Onboarding Fixes | 1/1 | Complete   | 2026-03-25 |
-| 5. SMS Inbound + STT Opt-Out Wiring | 0/1 | Not started | - |
+| 5. SMS Inbound + STT Opt-Out Wiring | 1/1 | Complete   | 2026-03-25 |
