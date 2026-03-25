@@ -7,11 +7,21 @@ import os
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import click
 import structlog
 
 logger = structlog.get_logger()
+
+
+def _get_project_root() -> Path:
+    """Locate the project root (parent of holler/ package).
+
+    Navigates: commands.py -> cli/ -> holler/ -> project_root/
+    Works regardless of the user's current working directory.
+    """
+    return Path(__file__).resolve().parent.parent.parent
 
 
 @click.group()
@@ -218,9 +228,16 @@ def _write_trunk_config(host, user, password):
 def _start_services():
     """Start Docker Compose services and wait for health."""
     click.echo("  Starting Docker Compose services...")
+    project_root = _get_project_root()
+    compose_file = project_root / "docker" / "docker-compose.yml"
+    if not compose_file.exists():
+        click.secho(f"  docker-compose.yml not found at {compose_file}", fg="red")
+        return
     try:
         result = subprocess.run(
-            ["docker", "compose", "up", "-d"],
+            ["docker", "compose", "-f", str(compose_file),
+             "--project-directory", str(project_root / "docker"),
+             "up", "-d"],
             capture_output=True, text=True, timeout=120
         )
         if result.returncode != 0:
