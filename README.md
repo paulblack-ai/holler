@@ -10,37 +10,72 @@ Holler gives AI agents a mouth and an ear. It's a self-hosted telecom stack that
 
 The phone network was built for humans. Holler is a bridge from that infrastructure into whatever comes next.
 
+## Prerequisites
+
+- Python 3.11+
+- Docker (for FreeSWITCH + Redis via Docker Compose)
+- A SIP trunk account (the single external dependency — any commodity SIP provider)
+- An OpenAI-compatible LLM endpoint (default: Ollama on localhost)
+
 ## Quick start
 
 ```bash
-pip install holler
+git clone https://github.com/holler-ai/holler && cd holler
+pip install -e .
 holler init
-holler trunk add --provider voipms --user xxx --pass xxx
-holler call +44XXXXXXXXXX --agent "Say hello and ask how their day is going."
+holler trunk --host sip.example.com --user xxx --pass xxx
+holler call +14155551234 --agent "Say hello and ask how their day is going."
 ```
 
-Four commands. No dashboard. No account creation. No OAuth flow.
+Four commands from clone to first call. No dashboard. No account creation. No OAuth flow.
 
 ## How it works
 
 | Layer | What | How |
 |---|---|---|
 | Agent interface | LLM emits tool calls (`call`, `sms`, `transfer`) | Python SDK / CLI |
-| Voice pipeline | Local STT + TTS, real-time streaming | faster-whisper + Piper/Kokoro |
+| Voice pipeline | Local STT + TTS, real-time streaming | faster-whisper + Kokoro |
 | Compliance | Per-country plugins in the call path | Community-contributed modules |
 | Routing | FreeSWITCH softswitch | Self-hosted, open source |
 | Transport | SIP trunk / GSM modem / WebRTC mesh | Your choice of on-ramp |
+
+## Project structure
+
+```
+holler/
+  core/
+    voice/          # STT, TTS, VAD, pipeline, audio bridge
+    freeswitch/     # ESL connection, event handling
+    telecom/        # Number pool, sessions, routing, recording
+    compliance/     # Gateway, consent DB, DNC, audit log
+    agent/          # Tool definitions, executor, LLM adapters
+    sms/            # SMPP client, delivery hooks
+  countries/
+    us/             # TCPA, DNC, time-of-day (implemented)
+    _template/      # Scaffold for new country modules
+  cli/              # CLI commands (init, trunk, call)
+  main.py           # Application entry point
+config/
+  freeswitch/       # FreeSWITCH XML config
+docker/             # Docker Compose + Dockerfile
+```
 
 ## Country modules
 
 The core is jurisdiction-agnostic. Compliance lives in country modules — community-contributed plugins that enforce local rules.
 
+Currently implemented: `us` (TCPA, DNC, time-of-day restrictions).
+
+No module for your country? [Build one.](CONTRIBUTING.md#country-modules) You know your local telecom rules better than anyone.
+
+## Development
+
 ```bash
-holler module add us    # Activates TCPA, STIR/SHAKEN, DNC, state overlays
-holler module add uk    # Activates Ofcom/TPS rules
+pip install -e ".[dev]"
+pytest
 ```
 
-No module for your country? [Build one.](docs/contributing-country-modules.md) You know your local telecom rules better than anyone.
+See `.env.example` for all configuration options. Config is written to `.holler.env` by `holler init`.
 
 ## The bridge
 
