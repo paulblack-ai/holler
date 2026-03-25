@@ -5,6 +5,7 @@ and HollerConfig SMS field loading.
 """
 import os
 import unittest.mock as mock
+from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
@@ -13,6 +14,7 @@ from holler.cli.commands import (
     cli,
     _generate_env_file,
     _write_trunk_config,
+    _get_project_root,
 )
 
 
@@ -201,6 +203,40 @@ class TestWriteTrunkConfig:
             assert "WHISPER_MODEL=distil-large-v3" in content
         finally:
             os.chdir(orig_cwd)
+
+
+class TestStartServices:
+    """_start_services() resolves compose file path from package location."""
+
+    def test_get_project_root_contains_docker_compose(self):
+        from holler.cli.commands import _get_project_root
+        root = _get_project_root()
+        assert (root / "docker" / "docker-compose.yml").exists()
+
+    def test_start_services_passes_compose_file_flag(self):
+        with mock.patch("holler.cli.commands.subprocess.run") as mock_run, \
+             mock.patch("holler.cli.commands.click.echo"), \
+             mock.patch("holler.cli.commands.click.secho"):
+            mock_run.return_value = mock.Mock(returncode=0)
+            from holler.cli.commands import _start_services
+            # Mock socket to avoid waiting for FreeSWITCH
+            with mock.patch("socket.socket"):
+                _start_services()
+            args = mock_run.call_args[0][0]
+            assert "-f" in args
+            compose_idx = args.index("-f") + 1
+            assert args[compose_idx].endswith("docker/docker-compose.yml")
+
+    def test_start_services_passes_project_directory_flag(self):
+        with mock.patch("holler.cli.commands.subprocess.run") as mock_run, \
+             mock.patch("holler.cli.commands.click.echo"), \
+             mock.patch("holler.cli.commands.click.secho"):
+            mock_run.return_value = mock.Mock(returncode=0)
+            from holler.cli.commands import _start_services
+            with mock.patch("socket.socket"):
+                _start_services()
+            args = mock_run.call_args[0][0]
+            assert "--project-directory" in args
 
 
 class TestHollerConfigSMSField:
