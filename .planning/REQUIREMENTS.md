@@ -44,14 +44,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### SMS
 
-- [ ] **SMS-01**: Agent can send an SMS to a phone number via SMPP protocol
-- [ ] **SMS-02**: Agent can receive inbound SMS and route to an agent session
-- [ ] **SMS-03**: SMS delivery status (sent, delivered, failed) is reported back to the agent
+- [x] **SMS-01**: Agent can send an SMS to a phone number via SMPP protocol
+- [x] **SMS-02**: Agent can receive inbound SMS and route to an agent session
+- [x] **SMS-03**: SMS delivery status (sent, delivered, failed) is reported back to the agent
 
 ### Agent Interface
 
-- [ ] **AGENT-01**: Tool-use protocol exposes `call`, `sms`, `hangup`, `transfer` actions as LLM tool invocations
-- [ ] **AGENT-02**: Agent interface is LLM-agnostic — works with any model that supports tool/function calling
+- [x] **AGENT-01**: Tool-use protocol exposes `call`, `sms`, `hangup`, `transfer` actions as LLM tool invocations
+- [x] **AGENT-02**: Agent interface is LLM-agnostic — works with any model that supports tool/function calling
 - [ ] **AGENT-03**: CLI provides `holler init` to download models and start local services
 - [ ] **AGENT-04**: CLI provides `holler trunk add` to configure SIP trunk credentials
 - [ ] **AGENT-05**: CLI provides `holler call` to make a call with an agent prompt in one command
@@ -128,11 +128,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-05 | Phase 2 | Complete |
 | COMP-06 | Phase 2 | Complete |
 | COMP-07 | Phase 2 | Complete |
-| SMS-01 | Phase 3 | Pending |
-| SMS-02 | Phase 3 | Pending |
-| SMS-03 | Phase 3 | Pending |
-| AGENT-01 | Phase 3 | Pending |
-| AGENT-02 | Phase 3 | Pending |
+| SMS-01 | Phase 3 | Complete |
+| SMS-02 | Phase 3 | Complete |
+| SMS-03 | Phase 3 | Complete |
+| AGENT-01 | Phase 3 | Complete |
+| AGENT-02 | Phase 3 | Complete |
 | AGENT-03 | Phase 3 | Pending |
 | AGENT-04 | Phase 3 | Pending |
 | AGENT-05 | Phase 3 | Pending |

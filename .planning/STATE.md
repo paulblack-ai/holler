@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Phase 3 planned — 4 plans in 3 waves
-last_updated: "2026-03-25T00:06:58.140Z"
+status: Ready to execute
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-25T00:13:04.983Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 14
-  completed_plans: 10
+  completed_plans: 12
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** An AI agent can make a phone call from locally-hosted infrastructure with a single tool invocation — no vendor accounts, no API keys, no human in the loop.
-**Current focus:** Phase 02 — telecom-abstraction-compliance
+**Current focus:** Phase 03 — sms-agent-interface-cli
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (sms-agent-interface-cli) — EXECUTING
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -56,6 +56,8 @@ Plan: Not started
 | Phase 02-telecom-abstraction-compliance P03 | 15min | 3 tasks | 6 files |
 | Phase 02-telecom-abstraction-compliance P04 | 4 | 2 tasks | 6 files |
 | Phase 02-telecom-abstraction-compliance P05 | 4min | 3 tasks | 6 files |
+| Phase 03-sms-agent-interface-cli P02 | 3min | 1 tasks | 5 files |
+| Phase 03-sms-agent-interface-cli P01 | 15min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -95,6 +97,11 @@ Recent decisions affecting current work:
 - [Phase 02-telecom-abstraction-compliance]: Transcript WhisperModel is a separate CPU instance from live STT model — Pitfall 6 prevents model contention
 - [Phase 02-telecom-abstraction-compliance]: stop_recording() sends explicit uuid_record stop — does not rely on RECORD_STOP event (Pitfall 1)
 - [Phase 02-telecom-abstraction-compliance]: telecom_sessions dict in main() closure — scoped to call path lifetime
+- [Phase 03-sms-agent-interface-cli]: prompt parameter on call tool uses nullable type pattern [string, null] per OpenAI strict mode Pitfall 4
+- [Phase 03-sms-agent-interface-cli]: ToolExecutor catches ComplianceBlockError specifically before generic Exception — ensures D-02 structured response never masked
+- [Phase 03-sms-agent-interface-cli]: Shared delivery_store dict between SMSClient and HollerHook — hook updates in-place, client reads; avoids separate sync mechanism
+- [Phase 03-sms-agent-interface-cli]: HollerHook duck-typed (no AbstractHook inheritance at class definition) to avoid hard aiosmpplib import at module load
+- [Phase 03-sms-agent-interface-cli]: sms_checked() reuses ComplianceModule.check_outbound() for SMS — same contract as voice; gateway method differentiates the action
 
 ### Pending Todos
 
@@ -108,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T00:06:58.130Z
-Stopped at: Phase 3 planned — 4 plans in 3 waves
-Resume file: .planning/phases/03-sms-agent-interface-cli/03-01-PLAN.md
+Last session: 2026-03-25T00:13:04.973Z
+Stopped at: Completed 03-02-PLAN.md
+Resume file: None
