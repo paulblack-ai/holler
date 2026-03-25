@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from holler.core.compliance.audit import AuditLog
     from holler.core.freeswitch.esl import FreeSwitchESL
     from holler.core.telecom.pool import NumberPool
+    from holler.core.sms.client import SMSClient
 
 
 @dataclass
@@ -198,3 +199,90 @@ class ComplianceGateway:
         call_uuid = await esl.originate(session.destination, session.session_uuid)
         session.call_uuid = call_uuid
         return call_uuid
+
+    async def sms_checked(
+        self,
+        sms_client: "SMSClient",
+        pool: "NumberPool",
+        session: "TelecomSession",
+        message: str,
+        log_id: str,
+    ) -> str:
+        """Run compliance check, then send SMS. Returns log_id.
+
+        This is the ONLY path to sms_client.send() for outbound SMS.
+        Provides the same structural compliance guarantee as originate_checked()
+        for voice calls (D-07): it is structurally impossible to send an SMS
+        without clearing this compliance gate.
+
+        Fail-closed on any error — exception in check, timeout, or unknown module
+        all result in a denied send. The DID is returned to the pool on any block.
+        An audit log entry is written on every check, pass or fail.
+
+        Args:
+            sms_client: SMSClient instance to send through after compliance passes.
+            pool: NumberPool to release the DID back to on compliance block.
+            session: TelecomSession for this SMS attempt.
+            message: UTF-8 message text to send.
+            log_id: Unique message identifier (passed to sms_client.send() and
+                    used for delivery status tracking).
+
+        Returns:
+            log_id on success (same value passed in).
+
+        Raises:
+            ComplianceBlockError: If the compliance check denies the SMS, times out,
+                                  raises an exception, or no module exists for the
+                                  destination. The DID is released before raising.
+        """
+        # --- Run compliance check (fail-closed on any error) ---
+        try:
+            module = self._router.resolve(session.destination)
+            result = await asyncio.wait_for(
+                module.check_outbound(session.destination, session),
+                timeout=self._timeout,
+            )
+        except NoComplianceModuleError:
+            result = ComplianceResult(
+                passed=False,
+                reason="no_compliance_module",
+                check_type="jurisdiction",
+                audit_fields={"destination_prefix": session.destination[:4]},
+            )
+        except asyncio.TimeoutError:
+            result = ComplianceResult(
+                passed=False,
+                reason="compliance_check_timeout",
+                check_type="timeout",
+                audit_fields={"timeout_s": self._timeout},
+            )
+        except Exception as e:
+            result = ComplianceResult(
+                passed=False,
+                reason=f"compliance_check_error: {str(e)}",
+                check_type="error",
+                audit_fields={"error": str(e)},
+            )
+
+        # --- Always write audit log — pass or fail (D-20, COMP-05) ---
+        await self._audit.write({
+            "channel": "sms",
+            "message_log_id": log_id,
+            "session_uuid": session.session_uuid,
+            "check_type": result.check_type,
+            "destination": session.destination,
+            "result": "allow" if result.passed else "deny",
+            "reason": result.reason,
+            "did": session.did,
+            **result.audit_fields,
+        })
+
+        session.compliance_result = result
+
+        if not result.passed:
+            await pool.release(session.did)  # Return DID to pool on block
+            raise ComplianceBlockError(result.reason)
+
+        # --- Compliance passed — send the SMS ---
+        await sms_client.send(session.destination, message, log_id)
+        return log_id
