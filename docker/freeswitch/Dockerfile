@@ -5,7 +5,7 @@
 # -------------------------------------------------------------------
 # Stage 1: deps — shallow-clone all sources
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS deps
+FROM alpine:3.20 AS deps
 
 RUN apk add --no-cache git
 
@@ -33,7 +33,7 @@ RUN git clone --depth 1 --single-branch \
 # -------------------------------------------------------------------
 # Stage 2: builder-sofia — build sofia-sip
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS builder-sofia
+FROM alpine:3.20 AS builder-sofia
 
 RUN apk add --no-cache \
     build-base autoconf automake libtool \
@@ -51,7 +51,7 @@ RUN ./bootstrap.sh && \
 # -------------------------------------------------------------------
 # Stage 3: builder-libks — build libks (needed by FreeSWITCH)
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS builder-libks
+FROM alpine:3.20 AS builder-libks
 
 RUN apk add --no-cache \
     build-base cmake openssl-dev util-linux-dev
@@ -67,7 +67,7 @@ RUN cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr && \
 # -------------------------------------------------------------------
 # Stage 4: builder-spandsp — build spandsp (DSP for fax/tone)
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS builder-spandsp
+FROM alpine:3.20 AS builder-spandsp
 
 RUN apk add --no-cache \
     build-base autoconf automake libtool \
@@ -76,7 +76,9 @@ RUN apk add --no-cache \
 COPY --from=deps /src/spandsp /src/spandsp
 WORKDIR /src/spandsp
 
-RUN ./bootstrap.sh && \
+# spandsp's autogen.sh has broken libtoolize version parsing on Alpine.
+# Use autoreconf directly — does the same thing without the buggy checks.
+RUN autoreconf -fi && \
     ./configure --prefix=/usr --enable-static=no && \
     make -j$(nproc) && \
     make install DESTDIR=/build
@@ -85,7 +87,7 @@ RUN ./bootstrap.sh && \
 # -------------------------------------------------------------------
 # Stage 5: builder-freeswitch — compile FreeSWITCH from source
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS builder-freeswitch
+FROM alpine:3.20 AS builder-freeswitch
 
 # Build deps
 RUN apk add --no-cache \
@@ -99,6 +101,9 @@ RUN apk add --no-cache \
 COPY --from=builder-sofia /build/ /
 COPY --from=builder-libks /build/ /
 COPY --from=builder-spandsp /build/ /
+
+# Update ldconfig so linker can find installed libs
+RUN ldconfig /usr/lib || true
 
 COPY --from=deps /src/freeswitch /src/freeswitch
 WORKDIR /src/freeswitch
@@ -125,27 +130,36 @@ RUN mv modules.conf modules.conf.orig && \
         'event_handlers/mod_event_socket' \
     > modules.conf
 
+# Configure — disable libvpx (mod_av not in modules.conf but configure
+# still tries to build its libs). --enable-fhs for standard paths.
 RUN ./configure \
         --prefix=/usr \
         --sysconfdir=/etc/freeswitch \
         --localstatedir=/var \
         --enable-fhs \
-        --disable-mod-signalwire \
-        --disable-mod-av && \
-    make -j$(nproc) && \
-    make install DESTDIR=/build && \
-    make cd-moh-install DESTDIR=/build || true && \
-    make cd-sounds-install DESTDIR=/build || true
+        --disable-libvpx
+
+# Build and install
+RUN make -j$(nproc) && make install DESTDIR=/build
+
+# Sounds and MOH are optional — create target dir first
+RUN mkdir -p /build/usr/share/freeswitch/sounds && \
+    (make cd-moh-install DESTDIR=/build || true) && \
+    (make cd-sounds-install DESTDIR=/build || true)
+
+# Alpine symlinks /var/run -> /run. Remove /var/run from DESTDIR
+# to avoid COPY conflict with the runner stage's symlink.
+RUN rm -rf /build/var/run
 
 
 # -------------------------------------------------------------------
 # Stage 6: builder-mod-audio-stream — build mod_audio_stream on top
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS builder-mod-audio-stream
+FROM alpine:3.20 AS builder-mod-audio-stream
 
 RUN apk add --no-cache \
     build-base cmake git pkgconf \
-    libwebsockets-dev openssl-dev
+    libwebsockets-dev openssl-dev speexdsp-dev libevent-dev zlib-dev
 
 # We need FreeSWITCH headers for mod compilation
 COPY --from=builder-freeswitch /build/ /
@@ -153,7 +167,8 @@ COPY --from=builder-spandsp /build/ /
 COPY --from=builder-sofia /build/ /
 COPY --from=builder-libks /build/ /
 
-RUN git clone --depth 1 https://github.com/amigniter/mod_audio_stream.git /src/mod_audio_stream
+RUN git clone --depth 1 --recurse-submodules \
+    https://github.com/amigniter/mod_audio_stream.git /src/mod_audio_stream
 
 WORKDIR /src/mod_audio_stream
 RUN mkdir build && cd build && \
@@ -166,7 +181,7 @@ RUN mkdir build && cd build && \
 # -------------------------------------------------------------------
 # Stage 7: runner — minimal runtime image
 # -------------------------------------------------------------------
-FROM alpine:3.21 AS runner
+FROM alpine:3.20 AS runner
 
 # Runtime dependencies only
 RUN apk add --no-cache \
@@ -177,6 +192,11 @@ RUN apk add --no-cache \
 
 # Install FreeSWITCH binaries and modules
 COPY --from=builder-freeswitch /build/ /
+
+# Install sofia-sip, spandsp, libks shared libraries (not in FreeSWITCH DESTDIR)
+COPY --from=builder-sofia /build/usr/lib/ /usr/lib/
+COPY --from=builder-spandsp /build/usr/lib/ /usr/lib/
+COPY --from=builder-libks /build/usr/lib/ /usr/lib/
 
 # Install mod_audio_stream
 COPY --from=builder-mod-audio-stream /build/usr/lib/freeswitch/mod/mod_audio_stream.so \
