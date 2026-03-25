@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Milestone complete
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-25T01:01:49.551Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 04-cli-docker-onboarding-fixes/04-01-PLAN.md
+last_updated: "2026-03-25T01:10:20.471Z"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 14
-  completed_plans: 14
+  completed_phases: 4
+  total_plans: 15
+  completed_plans: 15
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** An AI agent can make a phone call from locally-hosted infrastructure with a single tool invocation — no vendor accounts, no API keys, no human in the loop.
-**Current focus:** Phase 03 — sms-agent-interface-cli
+**Current focus:** Phase 04 — cli-docker-onboarding-fixes
 
 ## Current Position
 
-Phase: 03
-Plan: Not started
+Phase: 04 (cli-docker-onboarding-fixes) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Plan: Not started
 | Phase 03-sms-agent-interface-cli P01 | 15min | 2 tasks | 6 files |
 | Phase 03-sms-agent-interface-cli P03 | 5min | 2 tasks | 3 files |
 | Phase 03-sms-agent-interface-cli P04 | 5min | 2 tasks | 6 files |
+| Phase 04-cli-docker-onboarding-fixes P01 | 2m 19s | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,10 @@ Recent decisions affecting current work:
 - [Phase 03-sms-agent-interface-cli]: SMS client optional init: SMSClient object always created but initialize() called only if password is non-empty -- safe no-op when SMSC absent
 - [Phase 03-sms-agent-interface-cli]: ToolExecutor created before VoicePipeline: executor needs esl+sms+compliance+pool; pipeline receives executor as constructor arg
 - [Phase 03-sms-agent-interface-cli]: Click --pass alias: trunk command exposes both --password and --pass via Click option name list per D-15
+- [Phase 04-cli-docker-onboarding-fixes]: __file__-based _get_project_root() navigates commands.py -> cli/ -> holler/ -> project_root/ for CWD-independent compose path
+- [Phase 04-cli-docker-onboarding-fixes]: docker compose --project-directory set to docker/ dir so relative volume paths resolve correctly from any CWD
+- [Phase 04-cli-docker-onboarding-fixes]: ${VAR:-} syntax in docker-compose.yml environment block allows unset trunk vars without compose errors
+- [Phase 04-cli-docker-onboarding-fixes]: X-PRE-PROCESS defaults in vars.xml ensure FreeSWITCH starts cleanly when trunk not yet configured
 
 ### Pending Todos
 
@@ -130,6 +135,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T01:01:49.541Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-cli-docker-onboarding-fixes/04-CONTEXT.md
+Last session: 2026-03-25T01:10:20.460Z
+Stopped at: Completed 04-cli-docker-onboarding-fixes/04-01-PLAN.md
+Resume file: None

@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: FreeSWITCH + Voice Pipeline** - Working voice call through local hardware with streaming STT/TTS under 800ms
 - [x] **Phase 2: Telecom Abstraction + Compliance** - Session state, number pool, mandatory compliance gateway, US module, call records (completed 2026-03-24)
 - [x] **Phase 3: SMS + Agent Interface + CLI** - SMPP messaging, tool-use protocol, and four-command onboarding (completed 2026-03-25)
-- [ ] **Phase 4: CLI + Docker Onboarding Fixes** - Fix docker compose path, trunk credential propagation to FreeSWITCH
+- [x] **Phase 4: CLI + Docker Onboarding Fixes** - Fix docker compose path, trunk credential propagation to FreeSWITCH (completed 2026-03-25)
 - [ ] **Phase 5: SMS Inbound + STT Opt-Out Wiring** - Wire inbound SMS handler, wire STT keyword opt-out in audio path
 
 ## Phase Details
@@ -91,7 +91,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 04-01-PLAN.md — Fix docker compose path resolution, align FreeSWITCH env var names, wire env injection
+- [x] 04-01-PLAN.md — Fix docker compose path resolution, align FreeSWITCH env var names, wire env injection
 
 **UI hint**: no
 
@@ -116,5 +116,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. FreeSWITCH + Voice Pipeline | 4/5 | In Progress|  |
 | 2. Telecom Abstraction + Compliance | 5/5 | Complete   | 2026-03-24 |
 | 3. SMS + Agent Interface + CLI | 4/4 | Complete   | 2026-03-25 |
-| 4. CLI + Docker Onboarding Fixes | 0/1 | Not started | - |
+| 4. CLI + Docker Onboarding Fixes | 1/1 | Complete   | 2026-03-25 |
 | 5. SMS Inbound + STT Opt-Out Wiring | 0/TBD | Not started | - |
