@@ -3,21 +3,31 @@
 Provides call control operations via ESL inbound mode (D-02).
 Uses Genesis library (D-01) for asyncio-native ESL communication.
 All commands go through a persistent connection to ESL port 8021.
+
+The ESL host port can be overridden via HOLLER_ESL_HOST_PORT environment variable.
+This is needed on macOS when VPN software occupies port 8021, requiring the
+docker-compose.yml to map a different host port (e.g., HOLLER_ESL_HOST_PORT=18021).
 """
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 from typing import Optional
 import structlog
 
 logger = structlog.get_logger()
 
 
+def _default_esl_port() -> int:
+    """Read ESL port from HOLLER_ESL_HOST_PORT env var, defaulting to 8021."""
+    return int(os.environ.get("HOLLER_ESL_HOST_PORT", "8021"))
+
+
 @dataclass
 class ESLConfig:
     host: str = "127.0.0.1"
-    port: int = 8021
+    port: int = field(default_factory=_default_esl_port)
     password: str = "ClueCon"
     audio_stream_ws_base: str = "ws://127.0.0.1:8765/voice"
 
@@ -41,19 +51,56 @@ class FreeSwitchESL:
         from genesis import Inbound
         return Inbound(self.config.host, self.config.port, self.config.password)
 
-    async def connect(self) -> None:
-        """Connect to FreeSWITCH ESL and verify server is UP."""
-        self._client = self._make_inbound()
-        await self._client.connect()
-        status = await self._client.send("api status")
-        if "UP" not in str(status):
-            raise RuntimeError(f"FreeSWITCH not ready: {status}")
-        logger.info("esl.connected", host=self.config.host, port=self.config.port)
+    async def connect(self, retries: int = 5, retry_delay: float = 2.0) -> None:
+        """Connect to FreeSWITCH ESL and verify server is UP.
+
+        Retries up to `retries` times with `retry_delay` seconds between attempts,
+        to handle the window where FreeSWITCH is accepting ESL connections but has
+        not yet finished loading all modules (status body will be absent or not
+        contain "UP").
+
+        Args:
+            retries: Number of additional attempts after the first (default 5).
+            retry_delay: Seconds to wait between attempts (default 2.0).
+
+        Raises:
+            RuntimeError: If FreeSWITCH is not UP after all attempts.
+        """
+        last_body: str = ""
+        for attempt in range(retries + 1):
+            self._client = self._make_inbound()
+            await self._client.start()
+            status = await self._client.send("api status")
+            # status is an ESLEvent (UserDict subclass). The response body text
+            # is in status.body (set by the FSM for api/response messages).
+            # When FreeSWITCH is still initialising, status.body may be None or
+            # not contain "UP" yet.
+            body: str = status.body if isinstance(status.body, str) else ""
+            if "UP" in body:
+                logger.info("esl.connected", host=self.config.host, port=self.config.port)
+                return
+            last_body = body or repr(dict(status))
+            if attempt < retries:
+                logger.info(
+                    "esl.not_ready_retrying",
+                    attempt=attempt + 1,
+                    retries=retries,
+                    body_preview=last_body[:120],
+                    retry_delay=retry_delay,
+                )
+                await self._client.stop()
+                await asyncio.sleep(retry_delay)
+            else:
+                await self._client.stop()
+        raise RuntimeError(
+            f"FreeSWITCH not ready after {retries + 1} attempt(s). "
+            f"Last status body: {last_body}"
+        )
 
     async def disconnect(self) -> None:
         """Close ESL connection."""
         if self._client:
-            await self._client.close()
+            await self._client.stop()
             self._client = None
             logger.info("esl.disconnected")
 
