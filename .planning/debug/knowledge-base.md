@@ -12,3 +12,11 @@ Resolved debug sessions. Used by `gsd-debugger` to surface known-pattern hypothe
 - **Files changed:** config/freeswitch/freeswitch.xml, holler/core/freeswitch/esl.py
 ---
 
+## esl-status-parsing — FreeSwitchESL.connect() body extraction and retry backoff
+- **Date:** 2026-03-26
+- **Error patterns:** RuntimeError, FreeSWITCH not ready, api/response, Content-Type, Content-Length, status.body, None, UP, headers dict, initializing, connect
+- **Root cause:** Two issues: (1) status.body (ESLEvent.body) is None during FreeSWITCH startup because process_body has not yet been called; a prior code version used str(status) (the full UserDict) in the error f-string, producing a confusing headers-dict output in the RuntimeError message. (2) No retry logic meant the first connection attempt during FS startup always failed immediately instead of waiting for FS to finish loading modules.
+- **Fix:** (1) Guard body extraction with isinstance(status.body, str) so None never causes ambiguous falsy behaviour; fall back to repr(dict(status)) in error diagnostics. (2) Added retry loop in connect() — 5 retries with 2s delay — so transient startup "not UP yet" states are handled automatically. Also uses start()/stop() consistently per the Genesis API.
+- **Files changed:** holler/core/freeswitch/esl.py
+---
+
