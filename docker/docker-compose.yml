@@ -2,7 +2,24 @@ services:
   freeswitch:
     build:
       context: ./freeswitch
-    network_mode: "host"
+    # network_mode: host does NOT work on macOS Docker Desktop for exposing
+    # container ports to the macOS host. Use explicit port mappings instead
+    # so Docker Desktop's standard port-forwarding proxy routes traffic correctly.
+    ports:
+      # ESL — Python orchestrator connects here
+      # Note: host port 8021 may be intercepted by VPN software on macOS.
+      # Use HOLLER_ESL_PORT env var to override (default 8021 inside container).
+      - "${HOLLER_ESL_HOST_PORT:-8021}:8021"
+      # SIP signaling (UDP + TCP) — internal profile
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      # SIP TLS
+      - "5061:5061/tcp"
+      # SIP external profile (port 5080)
+      - "5080:5080/udp"
+      - "5080:5080/tcp"
+      # RTP media — dev range (101 ports; expand for production)
+      - "16384-16484:16384-16484/udp"
     environment:
       - HOLLER_TRUNK_HOST=${HOLLER_TRUNK_HOST:-}
       - HOLLER_TRUNK_USER=${HOLLER_TRUNK_USER:-}

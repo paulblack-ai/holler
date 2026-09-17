@@ -59,7 +59,10 @@ def init():
     _generate_env_file()
 
     # 4. Start Docker Compose services
-    _start_services()
+    if not _start_services():
+        click.echo()
+        click.secho("Init failed -- services did not start. Fix the errors above and re-run holler init.", fg="red", bold=True)
+        sys.exit(1)
 
     click.echo()
     click.secho("Holler initialized.", fg="green", bold=True)
@@ -258,8 +261,11 @@ def _write_trunk_config(host, user, password):
         f.writelines(new_lines)
 
 
-def _start_services():
-    """Start Docker Compose services and wait for health."""
+def _start_services() -> bool:
+    """Start Docker Compose services and wait for health.
+
+    Returns True if services started and ESL is reachable, False otherwise.
+    """
     click.echo("  Starting Docker Compose services...")
 
     # Check HOLLER_COMPOSE_FILE env var as an explicit override first
@@ -268,7 +274,7 @@ def _start_services():
         compose_file = Path(env_compose)
         if not compose_file.exists():
             click.secho(f"  HOLLER_COMPOSE_FILE={env_compose} not found", fg="red")
-            return
+            return False
     else:
         # Primary: resolve from package location (works in source checkout / editable install)
         project_root = _get_project_root()
@@ -284,7 +290,7 @@ def _start_services():
                 "  or set HOLLER_COMPOSE_FILE to the path of your docker-compose.yml.",
                 fg="red",
             )
-            return
+            return False
 
     # Detect docker compose command: plugin ("docker compose") or standalone ("docker-compose")
     compose_cmd = ["docker", "compose"]
@@ -307,23 +313,36 @@ def _start_services():
         )
         if result.returncode != 0:
             click.secho(f"  Docker Compose failed: {result.stderr}", fg="red")
-            return
+            # Detect port-conflict error and suggest the HOLLER_ESL_HOST_PORT workaround
+            if "address already in use" in result.stderr and ":8021" in result.stderr:
+                click.secho(
+                    "  Port 8021 is already in use (VPN software is a common cause on macOS).\n"
+                    "  Retry with an alternate host port:\n"
+                    "    HOLLER_ESL_HOST_PORT=18021 holler init",
+                    fg="yellow",
+                )
+            return False
 
-        # Wait for FreeSWITCH ESL port to be ready
+        # Wait for FreeSWITCH ESL port to be ready.
+        # Use HOLLER_ESL_HOST_PORT if set -- must match docker-compose.yml mapping.
+        esl_port = int(os.environ.get("HOLLER_ESL_HOST_PORT", "8021"))
         click.echo("  Waiting for FreeSWITCH...", nl=False)
         import socket
         for _ in range(30):  # 30 second timeout
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.settimeout(1)
-                sock.connect(("127.0.0.1", 8021))
+                sock.connect(("127.0.0.1", esl_port))
                 sock.close()
                 click.secho(" ready", fg="green")
-                return
+                return True
             except (ConnectionRefusedError, socket.timeout, OSError):
                 time.sleep(1)
-        click.secho(" timeout (FreeSWITCH not responding on port 8021)", fg="yellow")
+        click.secho(f" timeout (FreeSWITCH not responding on port {esl_port})", fg="yellow")
+        return False
     except FileNotFoundError:
         click.secho("  Docker not found -- install Docker and try again", fg="red")
+        return False
     except subprocess.TimeoutExpired:
         click.secho("  Docker Compose timed out", fg="red")
+        return False

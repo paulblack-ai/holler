@@ -4,5 +4,9 @@
     <param name="listen-ip" value="0.0.0.0"/>
     <param name="listen-port" value="8021"/>
     <param name="password" value="ClueCon"/>
+    <!-- Allow connections from loopback AND the Docker bridge network (172.18.0.0/16).
+         Without this, mod_event_socket defaults to loopback.auto (127.0.0.1 only),
+         which rejects connections arriving via Docker's bridge gateway (172.18.0.1). -->
+    <param name="apply-inbound-acl" value="rfc1918.auto"/>
   </settings>
 </configuration>

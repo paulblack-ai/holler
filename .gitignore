@@ -39,3 +39,13 @@ Thumbs.db
 # Docker
 .docker/
 .holler.env
+node_modules/
+.next/
+.terraform/
+.env.*
+!.env.example
+*.pem
+.claude/worktrees/
+.turbo/
+.mypy_cache/
+*.pyc

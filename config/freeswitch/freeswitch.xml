@@ -1,0 +1,23 @@
+<document type="freeswitch/xml">
+
+  <!-- Global variables loaded first -->
+  <X-PRE-PROCESS cmd="include" data="/etc/freeswitch/vars.xml"/>
+
+  <section name="configuration" description="Various Configuration">
+    <X-PRE-PROCESS cmd="include" data="/etc/freeswitch/autoload_configs/*.xml"/>
+  </section>
+
+  <section name="dialplan" description="Regex/XML Dialplan">
+    <X-PRE-PROCESS cmd="include" data="/etc/freeswitch/dialplan/*.xml"/>
+  </section>
+
+  <section name="chatplan" description="Regex/XML Chatplan">
+  </section>
+
+  <section name="directory" description="User Directory">
+  </section>
+
+  <section name="languages" description="Language Scripts">
+  </section>
+
+</document>
