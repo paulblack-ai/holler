@@ -127,3 +127,14 @@ None - all components are fully wired. LLM client requires a running OpenAI-comp
 ---
 *Phase: 01-freeswitch-voice-pipeline*
 *Completed: 2026-03-24*
+
+## Self-Check: PASSED
+
+- FOUND: holler/core/voice/llm.py
+- FOUND: holler/core/voice/pipeline.py
+- FOUND: holler/core/voice/audio_bridge.py
+- FOUND: holler/core/voice/__init__.py
+- FOUND: .planning/phases/01-freeswitch-voice-pipeline/01-04-SUMMARY.md
+- FOUND commit: 4fb6c48 (Task 1 - LLM client)
+- FOUND commit: c1a8e7f (Task 2 - audio bridge, pipeline, exports)
+- FOUND commit: 0adf496 (docs - plan metadata)
